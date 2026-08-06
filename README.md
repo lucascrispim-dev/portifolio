@@ -31,7 +31,23 @@ npm run build
 npm run start
 ```
 
-Pronto para deploy na [Vercel](https://vercel.com) sem configuração adicional.
+## Deploy na Vercel
+
+O projeto é um app Next.js padrão na raiz do repositório — a Vercel detecta tudo sozinha. **Não existe `vercel.json` de propósito:** qualquer configuração manual aqui só teria como efeito atrapalhar a detecção automática.
+
+1. Em [vercel.com/new](https://vercel.com/new), importe o repositório `lucascrispim-dev/portifolio`.
+2. Em **Branch**, escolha a branch onde este app está (`claude/next-era-web-game-gfnj6o`) — ou faça o merge dela na branch padrão antes e deixe a Vercel usar a padrão.
+3. Não mexa em Framework Preset, Build Command, Output Directory nem Install Command. Os valores detectados (Next.js / `next build`) já estão certos.
+4. **Environment Variables: não adicione nenhuma.** Em especial, *não* defina `NEXT_PUBLIC_ENABLE_DEV_TOOLS` — ela liga o painel de desenvolvimento (pular Eras, limpar progresso), que não pode existir na versão que o jogador usa. O valor ausente já significa "desligado".
+5. Deploy. A Vercel devolve uma URL `https://<projeto>.vercel.app` — abra essa URL no celular.
+
+Checagens rápidas depois de publicar, direto no celular:
+
+- O progresso sobrevive a fechar e reabrir a aba (fica no `localStorage` do aparelho — cada celular tem o seu).
+- Nenhum botão "DEV" aparece em canto nenhum da tela.
+- O botão "Não" foge e não escapa da área visível.
+
+> Cuidado: o progresso é gravado por navegador. Se o jogador começar no Chrome e depois abrir no Safari, ele recomeça do zero — combine de usar sempre o mesmo navegador, e evite janela anônima.
 
 ## Testes e validação
 

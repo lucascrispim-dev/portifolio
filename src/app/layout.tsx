@@ -87,7 +87,14 @@ const fontVariables = [
   era8Title.variable,
 ].join(" ");
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/**
+ * Props tipadas na mão de propósito: o `LayoutProps` global do Next é um
+ * tipo gerado dentro de `.next/`, então `npm run typecheck` falharia em um
+ * clone novo, antes do primeiro build.
+ */
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" className={`${fontVariables} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-black">{children}</body>
