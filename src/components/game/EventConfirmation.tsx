@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChoiceButton } from "@/components/game/ChoiceButton";
 import { NarratorText } from "@/components/game/NarratorText";
 import { LoadingSequence } from "@/components/game/LoadingSequence";
+import { SpontaneousNarrator } from "@/components/game/SpontaneousNarrator";
 import type { EventConfirmationCopy, NarratorLine } from "@/types/game";
 
 type Phase =
@@ -19,10 +20,12 @@ type Phase =
 
 export function EventConfirmation({
   copy,
+  spontaneousSeed = 0,
   onNotYet,
   onConfirmed,
 }: {
   copy: EventConfirmationCopy;
+  spontaneousSeed?: number;
   onNotYet: () => void;
   onConfirmed: () => void;
 }) {
@@ -52,6 +55,7 @@ export function EventConfirmation({
       {phase === "notYet" ? (
         <div className="flex flex-col gap-5">
           <NarratorText lines={notYetLines} />
+          <SpontaneousNarrator seed={spontaneousSeed} />
           <ChoiceButton onClick={onNotYet}>Até depois</ChoiceButton>
         </div>
       ) : null}

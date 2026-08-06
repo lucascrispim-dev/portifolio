@@ -14,11 +14,20 @@ import { IntroFlow } from "@/components/game/IntroFlow";
 import { MissionCard } from "@/components/game/MissionCard";
 import { NarratorText } from "@/components/game/NarratorText";
 import { QuizCard } from "@/components/game/QuizCard";
+import { SoundToggle } from "@/components/game/SoundToggle";
+import { StandbyScreen } from "@/components/game/StandbyScreen";
 import { eraDefinitions } from "@/content/eras";
 import { projectConfig } from "@/config/project";
 import { introTheme } from "@/config/themes";
+import { useReopenSignal } from "@/hooks/useReopenSignal";
 import type { GameAction } from "@/lib/game-machine";
-import type { Badge, EraScreen, GameProgress, NarratorLine } from "@/types/game";
+import type {
+  Badge,
+  EraId,
+  EraScreen,
+  GameProgress,
+  NarratorLine,
+} from "@/types/game";
 
 type MissionScreenType = Extract<EraScreen, { kind: "mission" }>;
 
@@ -110,10 +119,12 @@ function EraScreenRenderer({
   screen,
   eraId,
   dispatch,
+  onEnterWaiting,
 }: {
   screen: EraScreen | undefined;
-  eraId: keyof typeof eraDefinitions;
+  eraId: EraId;
   dispatch: (action: GameAction) => void;
+  onEnterWaiting: () => void;
 }) {
   if (!screen) return null;
 
@@ -175,12 +186,7 @@ function EraScreenRenderer({
       );
 
     case "mission":
-      return (
-        <MissionScreen
-          screen={screen}
-          onWaiting={() => dispatch({ type: "ERA_ENTER_WAITING", era: eraId })}
-        />
-      );
+      return <MissionScreen screen={screen} onWaiting={onEnterWaiting} />;
 
     case "closing":
       return (
@@ -204,6 +210,9 @@ function EraScreenRenderer({
   }
 }
 
+/** Sentinela: standby encerrado manualmente, nunca igual a um reopenCount real. */
+const STANDBY_DISMISSED = -1;
+
 export function GameScreen({
   progress,
   dispatch,
@@ -211,6 +220,17 @@ export function GameScreen({
   progress: GameProgress;
   dispatch: (action: GameAction) => void;
 }) {
+  const reopenCount = useReopenSignal();
+  /**
+   * Para cada Era, em qual "reabertura" ela entrou em espera. Estado de
+   * sessão — deliberadamente NÃO persistido: recarregar a página é
+   * justamente o que caracteriza uma reabertura, então uma sessão nova
+   * começa vazia e cai direto na confirmação do acontecimento.
+   */
+  const [standbyEnteredAt, setStandbyEnteredAt] = useState<
+    Partial<Record<EraId, number>>
+  >({});
+
   if (!progress.introCompleted) {
     return (
       <AppShell>
@@ -226,23 +246,64 @@ export function GameScreen({
   const sceneIndex = progress.eraSceneIndex[progress.currentEra];
   const isWaiting = status === "waiting_for_event" || status === "confirming_event";
 
+  /**
+   * Standby só enquanto a Era entrou em espera nesta mesma "reabertura".
+   * Quando `reopenCount` avança (jogador guardou o celular e voltou), a
+   * comparação deixa de bater e a confirmação assume — sem efeito nenhum,
+   * é derivação pura.
+   */
+  const isStandby = isWaiting && standbyEnteredAt[era.id] === reopenCount;
+
+  /**
+   * Na sequência final da Era VIII não pode existir nenhum controle na
+   * tela — nem o de som. "Não existe botão. Não existe opção." (roteiro
+   * Era VIII, tela final).
+   */
+  const isFinalSequence =
+    !isWaiting && era.screens[sceneIndex]?.kind === "finalTransfer";
+
+  function enterWaiting(eraId: EraId) {
+    setStandbyEnteredAt((previous) => ({ ...previous, [eraId]: reopenCount }));
+    dispatch({ type: "ERA_ENTER_WAITING", era: eraId });
+  }
+
+  function dismissStandby(eraId: EraId) {
+    setStandbyEnteredAt((previous) => ({
+      ...previous,
+      [eraId]: STANDBY_DISMISSED,
+    }));
+  }
+
   return (
     <AppShell>
-      <EraThemeProvider theme={era.theme}>
-        <div className="flex flex-1 flex-col px-6 py-10">
+      <EraThemeProvider theme={era.theme} blackout={isFinalSequence}>
+        {isFinalSequence ? null : <SoundToggle />}
+        {/* A sequência final é preta de ponta a ponta — sem respiro do tema da Era. */}
+        <div
+          className={`flex flex-1 flex-col ${isFinalSequence ? "bg-black" : "px-6 py-10"}`}
+        >
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${era.id}-${isWaiting ? "waiting" : sceneIndex}`}
+              key={`${era.id}-${isStandby ? "standby" : isWaiting ? "waiting" : sceneIndex}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.35 }}
               className="flex flex-1 flex-col"
             >
-              {isWaiting && era.eventConfirmation ? (
+              {isStandby ? (
+                <StandbyScreen
+                  returnCount={reopenCount + era.id}
+                  onReturn={() => dismissStandby(era.id)}
+                />
+              ) : isWaiting && era.eventConfirmation ? (
                 <EventConfirmation
                   copy={era.eventConfirmation}
-                  onNotYet={() => dispatch({ type: "EVENT_NOT_YET", era: era.id })}
+                  spontaneousSeed={reopenCount + era.id}
+                  onNotYet={() => {
+                    dispatch({ type: "EVENT_NOT_YET", era: era.id });
+                    enterWaiting(era.id);
+                  }}
                   onConfirmed={() => dispatch({ type: "EVENT_CONFIRMED", era: era.id })}
                 />
               ) : (
@@ -250,6 +311,7 @@ export function GameScreen({
                   screen={era.screens[sceneIndex]}
                   eraId={era.id}
                   dispatch={dispatch}
+                  onEnterWaiting={() => enterWaiting(era.id)}
                 />
               )}
             </motion.div>

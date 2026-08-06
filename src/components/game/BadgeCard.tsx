@@ -1,13 +1,19 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useEraTheme } from "@/components/game/EraThemeProvider";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { playEffect } from "@/lib/audio";
 import type { Badge } from "@/types/game";
 
 export function BadgeCard({ badge }: { badge: Badge }) {
   const theme = useEraTheme();
   const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    playEffect("badge");
+  }, [badge.id]);
 
   return (
     <motion.div

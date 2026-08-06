@@ -1,7 +1,8 @@
 "use client";
 
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
 import { useEraTheme } from "@/components/game/EraThemeProvider";
+import { playEffect } from "@/lib/audio";
 
 type ChoiceButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -15,9 +16,15 @@ export function ChoiceButton({
   children,
   className = "",
   style,
+  onClick,
   ...rest
 }: ChoiceButtonProps) {
   const theme = useEraTheme();
+
+  function handleClick(event: MouseEvent<HTMLButtonElement>) {
+    playEffect("tap");
+    onClick?.(event);
+  }
 
   const variantStyle: Record<ChoiceButtonVariant, React.CSSProperties> = {
     primary: {
@@ -41,6 +48,7 @@ export function ChoiceButton({
   return (
     <button
       type="button"
+      onClick={handleClick}
       className={`min-h-11 w-full px-6 py-3 text-[15px] font-semibold tracking-wide transition-transform duration-150 active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${className}`}
       style={{
         ...variantStyle[variant],

@@ -16,4 +16,7 @@ export const eraCompletionEvent: Partial<Record<EraId, NarrativeEvent>> = {
   6: "PRIVATE_MOMENT_CONFIRMED",
 };
 
-export const erasWithEventGate: EraId[] = [1, 2, 3, 4, 5, 6];
+/** Eras que passam pelo gate de acontecimento real (`waiting_for_event`). */
+export function hasEventGate(era: EraId): boolean {
+  return eraCompletionEvent[era] !== undefined;
+}

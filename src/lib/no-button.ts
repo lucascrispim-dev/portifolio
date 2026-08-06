@@ -5,9 +5,18 @@
  * botão. Ver docs/roteiro/PROJECT_ NEXT ERA (1).md, seção 4.
  */
 
+import { projectConfig } from "@/config/project";
+
 export type EscapePosition = { xPercent: number; yPercent: number };
 
-export const NO_BUTTON_TOTAL_ATTEMPTS = 8;
+/**
+ * Total de tentativas, vindo da configuração central (8, em referência ao
+ * 08/08). As 7 primeiras fogem — a última é a que explode —, então a lista
+ * de mensagens precisa ter exatamente `total - 1` itens. `assertConsistency`
+ * abaixo garante que mexer no config sem mexer nas mensagens não quebre a
+ * mecânica silenciosamente.
+ */
+export const NO_BUTTON_TOTAL_ATTEMPTS = projectConfig.noButtonAttempts;
 
 export const NO_BUTTON_MESSAGES: string[] = [
   "Boa tentativa.",
@@ -18,6 +27,21 @@ export const NO_BUTTON_MESSAGES: string[] = [
   "Esse botão tem\na mesma utilidade\nque um guarda-chuva\nembaixo d'água.",
   "Insistente...\n\nRespeito.",
 ];
+
+/** Número de fugas: todas as tentativas menos a última, que explode. */
+export const NO_BUTTON_ESCAPES = NO_BUTTON_TOTAL_ATTEMPTS - 1;
+
+export function assertNoButtonConsistency(): void {
+  if (NO_BUTTON_MESSAGES.length !== NO_BUTTON_ESCAPES) {
+    throw new Error(
+      `projectConfig.noButtonAttempts (${NO_BUTTON_TOTAL_ATTEMPTS}) exige ` +
+        `${NO_BUTTON_ESCAPES} mensagens em NO_BUTTON_MESSAGES, mas existem ` +
+        `${NO_BUTTON_MESSAGES.length}.`
+    );
+  }
+}
+
+assertNoButtonConsistency();
 
 /** Margem mínima em relação às bordas e às áreas reservadas para os outros botões. */
 const SAFE_MARGIN_PERCENT = 10;
@@ -55,7 +79,7 @@ export type NoButtonOutcome =
 /** `attemptsSoFar` = número de toques já registrados antes deste toque. */
 export function resolveNoButtonTap(attemptsSoFar: number): NoButtonOutcome {
   const attempts = attemptsSoFar + 1;
-  if (attemptsSoFar < NO_BUTTON_MESSAGES.length) {
+  if (attemptsSoFar < NO_BUTTON_ESCAPES) {
     return {
       kind: "escaped",
       position: pickEscapePosition(attemptsSoFar),

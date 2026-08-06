@@ -91,6 +91,21 @@ tests/                  Testes da máquina de estados e do botão "Não"
 
 A máquina de estados (`src/lib/game-machine.ts`) é um reducer puro e testável: cada Era avança por cenas (`ERA_SCENE_ADVANCE`) até uma missão; ao aceitar a missão a Era entra em `waiting_for_event`; reabrir o app pergunta se o acontecimento já ocorreu — "ainda não" mantém a Era pendente, confirmar libera apenas a próxima Era. A Era VII conclui automaticamente (não tem missão offline própria, ver nota em `docs/roteiro/ERA VII • Lover.md`); a Era VIII é terminal e não usa esse gate.
 
+### Espera e reabertura
+
+Aceitar a missão leva a uma **tela mínima de espera** (`StandbyScreen`) — o jogo sai do caminho e manda o jogador viver o acontecimento. A pergunta *"já aconteceu?"* só aparece quando o app é **reaberto**, que é o que sustenta a regra central do projeto ("o jogo não mede o tempo, ele mede a história").
+
+Duas formas de reabrir contam, porque o roteiro manda guardar o celular:
+
+- recarregar a página (sessão nova); ou
+- bloquear o celular e voltar — detectado por `visibilitychange` em `src/hooks/useReopenSignal.ts`, já que voltar de segundo plano **não** recarrega a página.
+
+O standby é estado de sessão e **não** vai para o `localStorage`: o que persiste é apenas `waiting_for_event`.
+
+## Som
+
+Desligado por padrão e opcional em tudo. Os efeitos são sintetizados na hora com a Web Audio API (`src/lib/audio.ts`) — nenhum arquivo, nenhuma requisição de rede e nada protegido por direitos autorais. O controle fica no canto superior direito (`SoundToggle`), com `aria-label`, e some por completo na sequência final da Era VIII, onde não pode existir nenhuma opção na tela.
+
 ## Prototipagem visual
 
 O sistema de temas e as telas-chave foram prototipados antes da implementação em um arquivo Figma (design system das 8 Eras + telas representativas: boot, convite, botão "Não", Termos de Uso, Era I completa, indicador de compatibilidade, sequência final da Era VIII), usado como referência visual durante o desenvolvimento.

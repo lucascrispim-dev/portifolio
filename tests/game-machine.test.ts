@@ -97,6 +97,31 @@ describe("game-machine: waiting_for_event gate", () => {
     const next = transition(progress, { type: "EVENT_CONFIRMED", era: 1 });
     expect(next).toEqual(progress);
   });
+
+  it("records the Era's narrative event on confirmation", () => {
+    const waiting = toWaiting();
+    expect(waiting.completedEvents).toEqual([]);
+    const next = transition(waiting, { type: "EVENT_CONFIRMED", era: 1 });
+    expect(next.completedEvents).toEqual(["NEW_MEMORY_CONFIRMED"]);
+  });
+
+  it("does not duplicate a narrative event if confirmation replays", () => {
+    let progress = toWaiting();
+    progress = transition(progress, { type: "EVENT_CONFIRMED", era: 1 });
+    // Volta para waiting e confirma de novo — o evento não deve duplicar.
+    progress = transition(progress, { type: "ERA_ENTER_WAITING", era: 1 });
+    progress = transition(progress, { type: "EVENT_CONFIRMED", era: 1 });
+    expect(progress.completedEvents).toEqual(["NEW_MEMORY_CONFIRMED"]);
+  });
+
+  it("records no narrative event for Eras without an event gate (VII, VIII)", () => {
+    let progress = createInitialProgress();
+    progress = transition(progress, { type: "DEV_UNLOCK_ALL" });
+    progress = transition(progress, { type: "ERA_SCENE_ADVANCE", era: 7 });
+    progress = transition(progress, { type: "ERA_ENTER_WAITING", era: 7 });
+    progress = transition(progress, { type: "EVENT_CONFIRMED", era: 7 });
+    expect(progress.completedEvents).toEqual([]);
+  });
 });
 
 describe("game-machine: no-button + terms", () => {

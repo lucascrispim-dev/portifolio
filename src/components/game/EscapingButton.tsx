@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ConfettiExplosion } from "@/components/game/ConfettiExplosion";
 import { useEraTheme } from "@/components/game/EraThemeProvider";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { playEffect } from "@/lib/audio";
 import {
   pickEscapePosition,
   resolveNoButtonTap,
@@ -69,6 +70,7 @@ export function EscapingButton({
       onAttemptsChange(outcome.attempts);
       onMessageRef.current?.(outcome.message);
       vibrate(15);
+      playEffect("escape");
       return;
     }
 
@@ -77,6 +79,7 @@ export function EscapingButton({
     onMessageRef.current?.(null);
     setExploding(true);
     vibrate([40, 30, 60]);
+    playEffect("confirm");
     window.setTimeout(() => {
       setVisible(false);
       onDestroyed();

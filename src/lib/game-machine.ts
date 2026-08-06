@@ -1,6 +1,7 @@
 import { ERA_IDS } from "@/types/game";
 import type { EraId, EraStatus, GameProgress } from "@/types/game";
 import { createInitialProgress } from "@/lib/storage";
+import { eraCompletionEvent } from "@/lib/events";
 
 export type GameAction =
   | { type: "HYDRATE"; progress: GameProgress }
@@ -108,6 +109,7 @@ export function transition(
       if (status !== "waiting_for_event" && status !== "confirming_event") {
         return progress;
       }
+      const narrativeEvent = eraCompletionEvent[action.era];
       return {
         ...progress,
         eraStatuses: { ...progress.eraStatuses, [action.era]: "active" },
@@ -115,6 +117,9 @@ export function transition(
           ...progress.eraSceneIndex,
           [action.era]: progress.eraSceneIndex[action.era] + 1,
         },
+        completedEvents: narrativeEvent
+          ? addUnique(progress.completedEvents, narrativeEvent)
+          : progress.completedEvents,
         badges: action.badgeId
           ? addUnique(progress.badges, action.badgeId)
           : progress.badges,

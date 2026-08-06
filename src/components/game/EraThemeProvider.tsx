@@ -44,12 +44,16 @@ const textureOverlay: Partial<Record<EraTheme["texture"], CSSProperties>> = {
 export function EraThemeProvider({
   theme,
   children,
+  blackout = false,
 }: {
   theme: EraTheme;
   children: ReactNode;
+  /** Cobre o tema com preto puro (sequência final da Era VIII). */
+  blackout?: boolean;
 }) {
   const reducedMotion = useReducedMotion();
-  const overlay = theme.texture !== "none" ? textureOverlay[theme.texture] : undefined;
+  const overlay =
+    !blackout && theme.texture !== "none" ? textureOverlay[theme.texture] : undefined;
 
   return (
     <EraThemeContext.Provider value={theme}>
@@ -60,7 +64,9 @@ export function EraThemeProvider({
         transition={{ duration: reducedMotion ? 0 : 0.6 }}
         className="relative min-h-full w-full flex flex-col"
         style={{
-          background: theme.backgroundGradient ?? theme.background,
+          background: blackout
+            ? "#000000"
+            : (theme.backgroundGradient ?? theme.background),
           color: theme.foreground,
           fontFamily: theme.bodyFontFamily,
         }}
