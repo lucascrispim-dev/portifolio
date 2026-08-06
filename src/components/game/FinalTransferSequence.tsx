@@ -46,10 +46,22 @@ export function FinalTransferSequence({
   }
 
   useEffect(() => {
-    if (step === "silencio") {
-      const timeout = window.setTimeout(advance, reducedMotion ? 100 : 1400);
+    /**
+     * Os dois últimos compassos avançam sozinhos: o roteiro marca apenas
+     * "Silêncio." e "Fade." entre a despedida e a tela final — não existe
+     * botão ali. A partir daqui o jogador só assiste.
+     */
+    const autoAdvanceMs: Partial<Record<Step, number>> = {
+      silencio: 1400,
+      despedida: 4200,
+    };
+
+    const delay = autoAdvanceMs[step];
+    if (delay !== undefined) {
+      const timeout = window.setTimeout(advance, reducedMotion ? 100 : delay);
       return () => window.clearTimeout(timeout);
     }
+
     if (step === "final") {
       onReachFinal?.();
     }
@@ -91,18 +103,15 @@ export function FinalTransferSequence({
       {step === "silencio" ? <div aria-hidden className="h-2" /> : null}
 
       {step === "despedida" ? (
-        <div className="flex flex-col items-center gap-3 text-neutral-300">
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center gap-3 text-neutral-300"
+        >
           <p>Boa sorte, {playerOneName}.</p>
           <p className="max-w-xs">Escreva um capítulo que eu nunca conseguiria.</p>
-          <button
-            type="button"
-            className="mt-2 min-h-11 text-sm text-neutral-500 underline underline-offset-4"
-            onClick={advance}
-            aria-label="Continuar"
-          >
-            ...
-          </button>
-        </div>
+        </motion.div>
       ) : null}
 
       {step === "final" ? (
