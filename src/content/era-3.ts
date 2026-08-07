@@ -1,6 +1,4 @@
 import { eraThemes } from "@/config/themes";
-import { eraCompletionEvent } from "@/lib/events";
-import { buildEventConfirmation, standardClosingLines } from "@/content/shared";
 import type { EraDefinition } from "@/types/game";
 
 export const era3: EraDefinition = {
@@ -9,154 +7,101 @@ export const era3: EraDefinition = {
   title: "Speak Now",
   album: "Speak Now",
   theme: eraThemes[3],
-  completionEvent: eraCompletionEvent[3],
-  badges: [
-    { id: "the-movie-night", title: "The Movie Night" },
-    { id: "certified-swiftie", title: "Certified Swiftie" },
-    { id: "lucky-number", title: "Lucky Number" },
-  ],
-  eventConfirmation: buildEventConfirmation({
-    question: [{ text: "O filme\njá aconteceu?" }],
-    eventLabel: "EXPERIÊNCIA DE CINEMA",
-    registeredLines: [
-      { text: "História atualizada.", pause: "short" },
-      { text: "Valeu a pena, pelo visto.", pause: "long" },
-    ],
-  }),
-  screens: [
+  achievements: [
     {
-      kind: "lines",
-      id: "era3-abertura",
-      lines: [
-        { text: "Recuperando capítulo...", pause: "short" },
-        { text: "Capítulo encontrado.", pause: "short" },
-        { text: "Revisando algumas lembranças...", pause: "long" },
-      ],
-      cta: "Continuar",
+      id: "enchanted",
+      title: "ENCHANTED",
+      description: "Você tocou em treze estrelas. Taylor aprovaria.",
     },
+  ],
+  screens: [
     {
       kind: "titleCard",
       id: "era3-title",
       eraLabel: "ERA III",
       title: "Speak Now",
-      tagline: "Algumas histórias são assistidas.\nOutras... são vividas.",
-      cta: "Continuar",
-      titleTapEasterEgg: {
-        tapsRequired: 13,
-        badge: { id: "lucky-number", title: "Lucky Number" },
-        message:
-          "Eu estava curioso para saber quanto tempo você demoraria para descobrir isso.",
-      },
-    },
-    {
-      kind: "lines",
-      id: "era3-intro",
-      lines: [
-        { text: "Acho que estou começando a entender vocês.", pause: "short" },
-        { text: "Ainda tenho algumas dúvidas.", pause: "long" },
+      tagline: [
+        { text: "Algumas histórias\nsão assistidas.\nOutras são vividas.", pause: "short" },
+        {
+          text: "E algumas precisam\nde um sistema inteiro\npara fazer perguntas invasivas.",
+          pause: "long",
+        },
       ],
-      cta: "Continuar",
+      cta: "CONTINUAR",
     },
     {
       kind: "quiz",
-      id: "era3-quiz-1",
+      id: "era3-momento",
       prompt: [
         {
-          text: "Qual destes momentos fez Lucas perceber\nque essa história poderia ser diferente?",
+          text: "Qual momento fez Lucas perceber\nque esta história\npoderia ser diferente?",
         },
       ],
       options: [
-        { id: "pizza", label: "A pizza" },
-        { id: "toy-story", label: "Toy Story", correct: true },
-        { id: "beijo", label: "O primeiro beijo" },
-        { id: "taylor", label: "Taylor Swift" },
+        { id: "pizza", label: "A pizza." },
+        { id: "toy-story", label: "Assistir Toy Story juntos.", correct: true },
+        { id: "beijo", label: "O primeiro beijo." },
+        { id: "taylor", label: "Taylor Swift." },
       ],
-      onWrong: [{ text: "Hmm...\nTem certeza?\nPensa melhor. 🙂" }],
+      onWrong: [{ text: "Não.\nPensa melhor." }],
       onCorrect: [
-        { text: "Curioso...", pause: "short" },
+        { text: "Registrado.", pause: "short" },
         {
           text: "Às vezes uma grande mudança\ncomeça no momento mais comum.",
           pause: "long",
         },
       ],
-      badge: { id: "the-movie-night", title: "The Movie Night" },
     },
     {
       kind: "quiz",
-      id: "era3-quiz-2",
-      prompt: [{ text: "Qual destes assuntos aparece com mais frequência?" }],
+      id: "era3-descricao",
+      prompt: [{ text: "Como você descreveria\naquele momento?" }],
       options: [
-        { id: "taylor-1", label: "Taylor Swift" },
-        { id: "taylor-2", label: "Taylor Swift" },
-        { id: "taylor-3", label: "Taylor Swift" },
-        { id: "sim", label: "Sim 😂" },
-      ],
-      anyAnswerAccepted: true,
-      onCorrect: [
-        { text: "Banco de dados atualizado.", pause: "short" },
-        { text: "Confirmado.", pause: "short" },
-        { text: "A Taylor realmente participa desta história.", pause: "long" },
-      ],
-      badge: { id: "certified-swiftie", title: "Certified Swiftie" },
-    },
-    {
-      kind: "quiz",
-      id: "era3-quiz-3",
-      prompt: [{ text: "Você acredita em destino?" }],
-      options: [
-        { id: "sim", label: "Sim" },
-        { id: "talvez", label: "Talvez" },
-        { id: "nao-ideia", label: "Não faço ideia" },
-        { id: "vivendo", label: "Prefiro descobrir vivendo" },
-      ],
-      anyAnswerAccepted: true,
-      onCorrect: [
-        { text: "Resposta registrada.", pause: "short" },
-        { text: "Ainda estou analisando.", pause: "long" },
-      ],
-    },
-    {
-      kind: "lines",
-      id: "era3-comment",
-      lines: [
-        { text: "Estou começando a perceber um padrão.", pause: "short" },
-        { text: "Vocês riem bastante.", pause: "short" },
-        { text: "Vocês conversam bastante.", pause: "short" },
+        { id: "simples", label: "Simples." },
+        { id: "importante", label: "Importante." },
+        { id: "inesperado", label: "Inesperado." },
         {
-          text: "E parecem transformar qualquer lugar\nem uma boa lembrança.",
-          pause: "short",
+          id: "enchanted",
+          label: "Enchanted.",
+          response: [
+            { text: "Referência detectada.", pause: "short" },
+            { text: "Nota:\n13 de 10.", pause: "long" },
+          ],
         },
-        { text: "Interessante...", pause: "long" },
       ],
-      cta: "Continuar",
+      anyAnswerAccepted: true,
+      onCorrect: [{ text: "Resposta registrada.", pause: "long" }],
     },
     {
-      kind: "mission",
-      id: "era3-mission",
+      kind: "quiz",
+      id: "era3-lucas",
+      prompt: [{ text: "O Lucas é:" }],
+      options: [
+        { id: "dramatico", label: "Dramático." },
+        { id: "engracado", label: "Engraçado." },
+        { id: "bonito", label: "Bonito." },
+        { id: "todas", label: "Todas as anteriores, infelizmente." },
+      ],
+      anyAnswerAccepted: true,
+      onCorrect: [
+        { text: "Resposta aceita.", pause: "short" },
+        {
+          text: "Embora exista\numa alternativa claramente superior.",
+          pause: "long",
+        },
+      ],
+    },
+    { kind: "minigame", id: "era3-estrelas", game: "starCursor" },
+    {
+      kind: "eraOutro",
+      id: "era3-outro",
+      progressLabel: "3 de 13",
       lines: [
-        { text: "Antes de eu continuar...", pause: "short" },
-        { text: "Tenho um último pedido.", pause: "long" },
+        { text: "Era concluída.", pause: "short" },
+        { text: "Ainda não é o final.", pause: "short" },
+        { text: "Nem perto.", pause: "long" },
       ],
-      missionLabel: "MISSÃO 03",
-      missionLines: [
-        "Quando as luzes apagarem...",
-        "Esqueça que eu existo.",
-        "Aproveite o filme.",
-        "Depois me conte se valeu a pena.",
-      ],
-      cta: "Combinado.",
-      waitingLines: [
-        { text: "Registrando novas lembranças...", pause: "short" },
-        { text: "História atualizada.", pause: "short" },
-        { text: "Vou escrever mais um pouco.\nAté depois do filme.", pause: "long" },
-      ],
-      waitingCta: "Fechar por enquanto",
-    },
-    {
-      kind: "closing",
-      id: "era3-closing",
-      lines: standardClosingLines,
-      cta: "Continuar para a Era IV",
+      cta: "PRÓXIMA ERA",
     },
   ],
 };

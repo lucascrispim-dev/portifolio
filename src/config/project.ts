@@ -6,31 +6,31 @@
 export const projectConfig = {
   projectName: "PROJECT: NEXT ERA",
   playerOneName: "Lucas",
-  /** Exibido literalmente como no roteiro original até ser personalizado. */
-  playerTwoName: "[Nome dele]",
+  playerTwoName: "Cacau Nazaret",
   symbolicDate: "08/08",
   noButtonAttempts: 8,
   storageKey: "project-next-era-progress",
+  /** Total de Eras que o jogo *aparenta* ter. Só as 8 primeiras existem. */
+  totalEras: 13,
+  /** Número de achievements que destrava o "Long Live". */
+  longLiveThreshold: 7,
 };
 
 /**
- * Ponto central para novas piadas internas / mensagens extras do narrador.
- * Adicionar itens aqui não altera nenhum texto principal do roteiro —
- * serve apenas como banco para futuras mensagens espontâneas opcionais.
+ * Mensagens espontâneas do narrador. Ponto central para novas piadas
+ * internas — adicionar itens aqui não altera nenhum texto do roteiro.
  */
 export const bonusNarratorLines: string[] = [
-  "Curioso...",
+  "Curioso.",
   "Tá pensando demais.",
   "Calma. Aproveita o momento.",
   "Eu também faria isso.",
-  "Interessante...",
+  "Interessante.",
   "Acho que essa foi uma boa escolha.",
   "Não posso contar tudo ainda.",
   "Você vai entender depois.",
   "Ainda não chegou a hora.",
-  "Voltar toda hora não acelera a história.",
   "Não adianta procurar pistas aqui.",
-  "Talvez a pista esteja fora da tela.",
   "Você realmente é curioso.",
   "Eu avisei que não contaria o final.",
 ];

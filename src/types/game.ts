@@ -1,29 +1,34 @@
-export type EraId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+/**
+ * O jogo aparenta ter 13 Eras, mas só as 8 primeiras existem de fato.
+ * As Eras IX a XIII servem à ficção de que o projeto continua depois —
+ * elas nunca saem de "locked" (ver docs/roteiro/NOVO-FLUXO-13-ERAS.md).
+ */
+export type EraId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
-export const ERA_IDS: EraId[] = [1, 2, 3, 4, 5, 6, 7, 8];
+export type PlayableEraId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+export const ERA_IDS: EraId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+
+export const PLAYABLE_ERA_IDS: PlayableEraId[] = [1, 2, 3, 4, 5, 6, 7, 8];
+
+export const LAST_PLAYABLE_ERA: PlayableEraId = 8;
+
+export function isPlayableEra(era: EraId): era is PlayableEraId {
+  return era <= LAST_PLAYABLE_ERA;
+}
+
+export type EraStatus = "locked" | "available" | "active" | "completed";
 
 /**
- * Eras I-VI progress through the full "waiting_for_event" gate.
- * Era VII completes automatically at the end of its scene sequence
- * (it has no offline mission of its own — see docs/roteiro/ERA VII).
- * Era VIII never leaves "active" — it is terminal.
+ * Etapas da sequência final. Persistidas para que recarregar a página
+ * depois do "ENCERRAR" não devolva o jogador ao jogo nem repita a
+ * surpresa do começo.
  */
-export type EraStatus =
-  | "locked"
-  | "available"
-  | "active"
-  | "waiting_for_event"
-  | "confirming_event"
-  | "completed";
-
-export type NarrativeEvent =
-  | "NEW_MEMORY_CONFIRMED"
-  | "SHARED_MOMENT_CONFIRMED"
-  | "MOVIE_EXPERIENCE_CONFIRMED"
-  | "CONVERSATION_CONFIRMED"
-  | "ANOTHER_MEMORY_CONFIRMED"
-  | "PRIVATE_MOMENT_CONFIRMED"
-  | "FINAL_STEP_READY";
+export type FinalStage =
+  | "playing"
+  | "interrupted"
+  | "transferring"
+  | "final";
 
 export type EraTexture = "paper" | "grain" | "polaroid" | "manuscript" | "none";
 
@@ -39,7 +44,7 @@ export type EraTheme = {
    * em temas de fundo escuro, `accent` e `foreground` são ambos claros.
    */
   buttonTextColor: string;
-  /** Cor de texto legível sobre uma superfície preenchida com `accent` (ex.: badges). */
+  /** Cor de texto legível sobre uma superfície preenchida com `accent`. */
   accentTextColor: string;
   texture: EraTexture;
   titleFontFamily: string;
@@ -56,25 +61,23 @@ export type QuizOption = {
   id: string;
   label: string;
   correct?: boolean;
+  /** Resposta do narrador exclusiva desta alternativa (ex.: "Enchanted"). */
+  response?: NarratorLine[];
 };
 
-export type Badge = {
+export type Achievement = {
   id: string;
   title: string;
   description?: string;
 };
 
-export type EventConfirmationCopy = {
-  reopenLines: NarratorLine[];
-  question: NarratorLine[];
-  notYetResponse: NarratorLine[];
-  confirmQuestion: string;
-  maybeResponse: NarratorLine[];
-  doubtResponse: NarratorLine[];
-  certainResponse: NarratorLine[];
-  analyzingLabel: string;
-  eventLabel: string;
-  registeredLines: NarratorLine[];
+/** Entrada do mapa de progresso — inclui as Eras que não existem. */
+export type EraCatalogEntry = {
+  id: EraId;
+  /** Número exibido com dois dígitos ("01", "13"). */
+  label: string;
+  title: string;
+  playable: boolean;
 };
 
 export type EraScreen =
@@ -84,13 +87,8 @@ export type EraScreen =
       id: string;
       eraLabel: string;
       title: string;
-      tagline: string;
+      tagline: NarratorLine[];
       cta: string;
-      titleTapEasterEgg?: {
-        tapsRequired: number;
-        badge: Badge;
-        message: string;
-      };
     }
   | {
       kind: "quiz";
@@ -100,52 +98,76 @@ export type EraScreen =
       anyAnswerAccepted?: boolean;
       onCorrect: NarratorLine[];
       onWrong?: NarratorLine[];
-      badge?: Badge;
+      achievement?: Achievement;
+      cta?: string;
     }
-  | { kind: "reveal"; id: string; lines: NarratorLine[]; badge?: Badge }
+  | {
+      kind: "reveal";
+      id: string;
+      /** Bloco monoespaçado exibido antes das falas (ex.: ARQUIVO LOCALIZADO). */
+      systemBlock?: string[];
+      lines: NarratorLine[];
+      achievement?: Achievement;
+      cta?: string;
+    }
   | {
       kind: "compatibility";
       id: string;
+      label?: string;
       lines: NarratorLine[];
-      flickerBeforeSettle?: boolean;
+      /** Ativa o easter egg "the 1" no dígito 1 do resultado. */
+      theOneEasterEgg?: boolean;
+      footerBlock?: string[];
+      cta?: string;
     }
+  | { kind: "minigame"; id: string; game: MinigameKind; cta?: string }
+  | { kind: "progressMap"; id: string; cta: string }
   | {
-      kind: "mission";
+      kind: "eraOutro";
       id: string;
+      /** Progresso exibido: "N de 13" ou um percentual já formatado. */
+      progressLabel: string;
       lines: NarratorLine[];
-      missionLabel: string;
-      missionLines: string[];
       cta: string;
-      waitingLines: NarratorLine[];
-      waitingCta: string;
     }
-  | { kind: "closing"; id: string; lines: NarratorLine[]; cta?: string }
-  | { kind: "finalTransfer"; id: string };
+  | { kind: "saveAndEnd"; id: string }
+  | { kind: "interruption"; id: string };
+
+export type MinigameKind =
+  | "wordSearch"
+  | "starCursor"
+  | "blankSpace"
+  | "waterCup"
+  | "paperRings"
+  | "fileCards"
+  | "cruelSummer"
+  | "noTouchButton"
+  | "trustScale";
 
 export type EraDefinition = {
-  id: EraId;
+  id: PlayableEraId;
   code: string;
   title: string;
   album: string;
   theme: EraTheme;
   screens: EraScreen[];
-  completionEvent?: NarrativeEvent;
-  eventConfirmation?: EventConfirmationCopy;
-  badges: Badge[];
+  achievements: Achievement[];
 };
 
 export type GameProgress = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   introCompleted: boolean;
   noButtonAttempts: number;
   noButtonDestroyed: boolean;
   termsAccepted: boolean;
-  currentEra: EraId;
+  currentEra: PlayableEraId;
   eraStatuses: Record<EraId, EraStatus>;
-  eraSceneIndex: Record<EraId, number>;
-  completedEvents: NarrativeEvent[];
-  badges: string[];
+  eraSceneIndex: Record<PlayableEraId, number>;
+  achievements: string[];
   easterEggs: string[];
-  compatibilityRevealed: boolean;
-  finalSequenceCompleted: boolean;
+  /** Texto digitado no minijogo Blank Space (Era V), relido na Era VIII. */
+  blankSpaceAnswer: string;
+  /** Quantas vezes tentou abrir a Era XIII — escolhe a mensagem irônica. */
+  eraXiiiTapCount: number;
+  finalStage: FinalStage;
 };

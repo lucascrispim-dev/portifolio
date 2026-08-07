@@ -6,9 +6,10 @@ import { era5 } from "@/content/era-5";
 import { era6 } from "@/content/era-6";
 import { era7 } from "@/content/era-7";
 import { era8 } from "@/content/era-8";
-import type { EraDefinition, EraId } from "@/types/game";
+import type { EraDefinition, PlayableEraId } from "@/types/game";
 
-export const eraDefinitions: Record<EraId, EraDefinition> = {
+/** Só as 8 primeiras Eras existem. As Eras IX a XIII vivem no catálogo. */
+export const eraDefinitions: Record<PlayableEraId, EraDefinition> = {
   1: era1,
   2: era2,
   3: era3,

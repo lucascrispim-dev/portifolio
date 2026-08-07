@@ -1,14 +1,24 @@
 # PROJECT: NEXT ERA
 
-Uma experiência web mobile-first, narrativa, de um único dia — oito Eras inspiradas em álbuns da Taylor Swift que terminam transferindo o controle para o Lucas. **O pedido de namoro não acontece no site.**
+Uma experiência web narrativa, mobile-first, jogada de uma sentada (45 a 70 minutos). O jogo aparenta ter **13 Eras**, mas só as oito primeiras existem: depois de concluir a folklore, um "evento não programado" interrompe o sistema, as Eras IX a XIII são canceladas e o controle passa para o Lucas. **O pedido não acontece no site.**
 
-> O roteiro completo (introdução + as 8 Eras) está documentado em [`docs/roteiro/`](docs/roteiro). Esses arquivos são a fonte de verdade do conteúdo narrativo e não devem ser modificados — apenas o código em `src/content/*.ts` é derivado deles.
+> **Fonte de verdade:** [`docs/roteiro/NOVO-FLUXO-13-ERAS.md`](docs/roteiro/NOVO-FLUXO-13-ERAS.md). Os oito arquivos de Era ao lado dele documentam o roteiro anterior (progressão por acontecimentos reais ao longo de um dia) e ficam preservados como histórico — o código em `src/content/*.ts` deriva do fluxo novo.
 
 ## Stack
 
 Next.js (App Router) · React 19 · TypeScript estrito · Tailwind CSS v4 · Framer Motion · `localStorage` · Vitest
 
-Sem backend, sem banco de dados. O jogo não mede o tempo — ele mede a história: a progressão acontece por eventos narrativos confirmados pelo jogador, nunca por cronômetro, senha, localização ou painel administrativo.
+Sem backend, sem banco de dados. Não há cronômetro, senha, localização, painel administrativo nem confirmação de acontecimentos externos: cada Era abre a próxima assim que o jogador termina as interações.
+
+## O truque
+
+Até o jogador tocar em **ENCERRAR**, tudo na tela sustenta que a história continua depois:
+
+- o mapa lista 13 Eras com nomes reais de álbuns (evermore, Midnights, The Tortured Poets Department, The Life of a Showgirl), então a lista parece um plano completo;
+- a compatibilidade sobe em múltiplos de 13 e **sempre trava em 99%**, com o 1% restante atribuído à Era XIII;
+- a Era VIII se apresenta como arquivo de análise e termina com "Status: AINDA NÃO ESCRITO".
+
+Se alguma dessas peças for enfraquecida, a surpresa deixa de funcionar. `tests/era-catalog.test.ts` protege as mais frágeis.
 
 ## Instalação
 
@@ -68,10 +78,12 @@ Toda configuração editável fica centralizada em [`src/config/project.ts`](src
 export const projectConfig = {
   projectName: "PROJECT: NEXT ERA",
   playerOneName: "Lucas",
-  playerTwoName: "[Nome dele]", // troque aqui — não precisa procurar em outros arquivos
+  playerTwoName: "Cacau Nazaret", // troque aqui — não precisa procurar em outros arquivos
   symbolicDate: "08/08",
   noButtonAttempts: 8,
   storageKey: "project-next-era-progress",
+  totalEras: 13,          // quantas Eras o jogo aparenta ter
+  longLiveThreshold: 7,   // achievements para destravar o "Long Live"
 };
 ```
 
@@ -88,35 +100,28 @@ Desligado por padrão. Para ativar localmente (nunca em produção):
 NEXT_PUBLIC_ENABLE_DEV_TOOLS=true
 ```
 
-Com a flag ativa, um botão **DEV** aparece no canto inferior direito, permitindo: navegar entre Eras, limpar o progresso salvo e simular os estados `waiting_for_event` / `completed` de qualquer Era — sem senha visível dentro do jogo. Confirme que `NEXT_PUBLIC_ENABLE_DEV_TOOLS` **não** está definida (ou está `false`) antes de publicar.
+Com a flag ativa, um botão **DEV** aparece no canto inferior direito, permitindo pular para qualquer Era, limpar o progresso e forçar cada etapa da sequência final (`interrupted`, `transferring`, `final`) — sem senha visível dentro do jogo. Confirme que `NEXT_PUBLIC_ENABLE_DEV_TOOLS` **não** está definida (ou está `false`) antes de publicar.
 
 ## Arquitetura
 
 ```
-docs/roteiro/          Roteiro narrativo canônico (introdução + 8 Eras), não modificar
+docs/roteiro/
+  NOVO-FLUXO-13-ERAS.md  Fonte de verdade atual
+  ERA * .md              Roteiro anterior, preservado como histórico
 src/
-  app/                 page.tsx, layout.tsx (fontes via next/font), globals.css
-  components/game/     Componentes de UI reutilizáveis (tema, narrador, botões, etc.)
-  content/              Conteúdo tipado de cada Era, separado da UI
-  config/               projectConfig + sistema de temas
-  hooks/                useGameProgress (estado + persistência), useReducedMotion
-  lib/                  storage.ts, game-machine.ts (reducer puro), no-button.ts, events.ts
-  types/                Tipos centrais (GameProgress, EraDefinition, EraScreen, ...)
-tests/                  Testes da máquina de estados e do botão "Não"
+  app/                   page.tsx, layout.tsx (fontes + comentário escondido), globals.css
+  components/game/       Telas e componentes; minigames/ tem os minijogos
+  content/               Conteúdo tipado das 8 Eras + catálogo das 13
+  config/                projectConfig + temas por Era
+  hooks/                 useGameProgress (estado + persistência), useReducedMotion
+  lib/                   storage.ts, game-machine.ts (reducer puro), no-button.ts, audio.ts
+  types/                 Tipos centrais (GameProgress, EraDefinition, EraScreen, ...)
+tests/                   Máquina de estados, catálogo das Eras e botão "Não"
 ```
 
-A máquina de estados (`src/lib/game-machine.ts`) é um reducer puro e testável: cada Era avança por cenas (`ERA_SCENE_ADVANCE`) até uma missão; ao aceitar a missão a Era entra em `waiting_for_event`; reabrir o app pergunta se o acontecimento já ocorreu — "ainda não" mantém a Era pendente, confirmar libera apenas a próxima Era. A Era VII conclui automaticamente (não tem missão offline própria, ver nota em `docs/roteiro/ERA VII • Lover.md`); a Era VIII é terminal e não usa esse gate.
+A máquina de estados (`src/lib/game-machine.ts`) é um reducer puro e testável. Cada Era avança por cenas (`ERA_SCENE_ADVANCE`) e, ao terminar a última, `ERA_COMPLETE` libera a seguinte imediatamente. Só as Eras 1 a 8 têm conteúdo; as 9 a 13 vivem apenas em `src/content/era-catalog.ts` e nunca saem de `locked`.
 
-### Espera e reabertura
-
-Aceitar a missão leva a uma **tela mínima de espera** (`StandbyScreen`) — o jogo sai do caminho e manda o jogador viver o acontecimento. A pergunta *"já aconteceu?"* só aparece quando o app é **reaberto**, que é o que sustenta a regra central do projeto ("o jogo não mede o tempo, ele mede a história").
-
-Duas formas de reabrir contam, porque o roteiro manda guardar o celular:
-
-- recarregar a página (sessão nova); ou
-- bloquear o celular e voltar — detectado por `visibilitychange` em `src/hooks/useReopenSignal.ts`, já que voltar de segundo plano **não** recarrega a página.
-
-O standby é estado de sessão e **não** vai para o `localStorage`: o que persiste é apenas `waiting_for_event`.
+A sequência final é guardada em `finalStage` (`playing` → `interrupted` → `transferring` → `final`) e **persistida**: recarregar a página depois do ENCERRAR não devolve o jogador ao jogo nem repete a surpresa.
 
 ## Som
 

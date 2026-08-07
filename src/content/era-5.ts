@@ -1,7 +1,10 @@
 import { eraThemes } from "@/config/themes";
-import { eraCompletionEvent } from "@/lib/events";
-import { buildEventConfirmation, standardClosingLines } from "@/content/shared";
 import type { EraDefinition } from "@/types/game";
+
+const ESPECIALISTA = {
+  id: "especialista-em-lucas",
+  title: "ESPECIALISTA EM LUCAS",
+};
 
 export const era5: EraDefinition = {
   id: 5,
@@ -9,150 +12,101 @@ export const era5: EraDefinition = {
   title: "1989",
   album: "1989",
   theme: eraThemes[5],
-  completionEvent: eraCompletionEvent[5],
-  badges: [{ id: "especialista-em-lucas", title: "Especialista em Lucas" }],
-  eventConfirmation: buildEventConfirmation({
-    question: [{ text: "Essa nova lembrança\njá aconteceu?" }],
-    eventLabel: "NOVA LEMBRANÇA",
-    registeredLines: [
-      { text: "Registrado.", pause: "short" },
-      { text: "A coleção cresce.", pause: "long" },
-    ],
-  }),
+  achievements: [ESPECIALISTA],
   screens: [
-    {
-      kind: "lines",
-      id: "era5-abertura",
-      lines: [
-        { text: "Sincronizando novas memórias...", pause: "short" },
-        { text: "Sincronização concluída.", pause: "long" },
-      ],
-      cta: "Continuar",
-    },
     {
       kind: "titleCard",
       id: "era5-title",
       eraLabel: "ERA V",
       title: "1989",
-      tagline:
-        "Quanto mais observo...\nmais começo a acreditar que algumas pessoas simplesmente fazem sentido juntas.",
-      cta: "Continuar",
-    },
-    {
-      kind: "lines",
-      id: "era5-intro",
-      lines: [
-        { text: "Antes de prosseguirmos...", pause: "short" },
-        { text: "Preciso fazer uma última atualização no relatório.", pause: "long" },
-        { text: "Prometo que vai ser rápido.", pause: "short" },
-        { text: "(E talvez um pouco idiota.)", pause: "long" },
-      ],
-      cta: "Continuar",
-    },
-    {
-      kind: "lines",
-      id: "era5-diagnostico",
-      lines: [
-        { text: "Executando análise...", pause: "short" },
+      tagline: [
         {
-          text: "✔ Muitas risadas.\n✔ Muitas piadas internas.\n✔ Quantidade elevada de Taylor Swift.\n✔ Memórias registradas.\n✔ Compatibilidade: 99%.",
-          pause: "long",
+          text: "Bem-vindo\nà parte desnecessariamente\ncomplicada do projeto.",
+          pause: "short",
         },
-        {
-          text: 'Aviso.\nExiste uma quantidade\npreocupante de "te amo, idiota". 😂',
-          pause: "long",
-        },
+        { text: "Lucas faz TI.\nEra inevitável.", pause: "long" },
       ],
-      cta: "Continuar",
+      cta: "CONTINUAR",
     },
     {
       kind: "quiz",
-      id: "era5-quiz-1",
-      prompt: [
-        { text: "Teste de memória." },
-        { text: "O que o Lucas gosta de fazer\nquando passa mal?" },
-      ],
+      id: "era5-leite",
+      prompt: [{ text: "O que Lucas gosta de fazer\nquando passa mal?" }],
       options: [
-        { id: "leite", label: "🥛 Tomar leite.", correct: true },
-        { id: "remedio", label: "💊 Tomar remédio." },
-        { id: "dormir", label: "😴 Dormir." },
-        { id: "chocolate", label: "🍫 Comer chocolate." },
+        { id: "leite", label: "Tomar leite.", correct: true },
+        { id: "remedio", label: "Tomar remédio." },
+        { id: "dormir", label: "Dormir." },
+        { id: "reclamar", label: "Reclamar dramaticamente." },
       ],
-      onWrong: [{ text: "Hmm...\nTem certeza?\nPensa melhor. 🙂" }],
+      onWrong: [{ text: "Não.\nPensa melhor." }],
       onCorrect: [
         { text: "Resposta correta.", pause: "short" },
-        {
-          text: "É curioso como pequenos detalhes\ndizem muito sobre alguém.",
-          pause: "long",
-        },
+        { text: "Não vou questionar\na lógica médica.", pause: "long" },
       ],
-      badge: { id: "especialista-em-lucas", title: "Especialista em Lucas" },
+      achievement: ESPECIALISTA,
     },
     {
       kind: "quiz",
-      id: "era5-quiz-2",
+      id: "era5-eggs",
       prompt: [
-        { text: "Até agora..." },
-        { text: "quantos Easter Eggs você acha\nque encontrou?" },
+        { text: "Até agora,\nquantos Easter Eggs\nvocê encontrou?" },
       ],
       options: [
-        { id: "poucos", label: "Poucos." },
-        { id: "bastantes", label: "Bastantes." },
+        { id: "nenhum", label: "Nenhum." },
+        { id: "alguns", label: "Alguns." },
         { id: "todos", label: "Todos." },
-        { id: "nao-ideia", label: "Não faço ideia." },
+        { id: "nao-faco-ideia", label: "Não faço ideia." },
       ],
       anyAnswerAccepted: true,
-      onCorrect: [{ text: "Ainda faltam alguns... 👀" }],
+      onCorrect: [
+        { text: "Resposta registrada.", pause: "long" },
+        { text: "E incorreta.", pause: "short" },
+        { text: "Ainda faltam vários.", pause: "long" },
+      ],
     },
     {
-      kind: "lines",
-      id: "era5-comment",
-      lines: [
-        { text: "Confesso uma coisa.", pause: "short" },
+      kind: "quiz",
+      id: "era5-hoje",
+      prompt: [{ text: "O que provavelmente\nacontecerá hoje?" }],
+      options: [
+        { id: "inesperado", label: "Algo inesperado." },
+        { id: "taylor", label: "Taylor Swift será mencionada novamente." },
+        { id: "supra", label: "Iremos ao Supra." },
+        { id: "todas", label: "Todas as alternativas.", correct: true },
+      ],
+      onWrong: [{ text: "Incompleto.\nPensa maior." }],
+      onCorrect: [
+        { text: "Previsão registrada.", pause: "short" },
         {
-          text: "No começo eu achei\nque estava apenas organizando\nalgumas lembranças.",
-          pause: "short",
+          text: "O sistema não fornecerá\ndetalhes adicionais.",
+          pause: "long",
         },
-        { text: "Agora...\nacho que estou acompanhando\numa história.", pause: "long" },
-      ],
-      cta: "Continuar",
-    },
-    {
-      kind: "compatibility",
-      id: "era5-compatibility",
-      lines: [
-        { text: "Continuo sem entender\nesse último 1%.", pause: "short" },
-        { text: "Isso está começando\na me incomodar.", pause: "long" },
       ],
     },
     {
-      kind: "mission",
-      id: "era5-mission",
-      lines: [{ text: "Tenho mais um pedido.", pause: "long" }],
-      missionLabel: "MISSÃO 05",
-      missionLines: [
-        "Criem mais uma lembrança.",
-        "Não precisa ser perfeita.",
-        "As melhores nunca são.",
-      ],
-      cta: "Pode deixar.",
-      waitingLines: [
-        { text: "Salvando capítulo...", pause: "short" },
-        { text: "Capítulo salvo.", pause: "short" },
-        { text: "Vou continuar escrevendo.", pause: "short" },
+      kind: "quiz",
+      id: "era5-risco",
+      prompt: [{ text: "Qual é o maior risco\ndeste projeto?" }],
+      options: [
+        { id: "travar", label: "O site travar." },
+        { id: "roteiro", label: "Lucas esquecer o roteiro." },
+        { id: "final", label: "Você descobrir o final." },
         {
-          text: "Tenho a impressão\nde que estamos chegando\nperto do fim.",
-          pause: "short",
+          id: "leite",
+          label: "Faltar leite.",
+          response: [{ text: "Risco crítico identificado.", pause: "long" }],
         },
-        { text: "Até já.", pause: "long" },
       ],
-      waitingCta: "Fechar por enquanto",
+      anyAnswerAccepted: true,
+      onCorrect: [{ text: "Risco registrado.", pause: "long" }],
     },
+    { kind: "minigame", id: "era5-blank-space", game: "blankSpace" },
     {
-      kind: "closing",
-      id: "era5-closing",
-      lines: standardClosingLines,
-      cta: "Continuar para a Era VI",
+      kind: "eraOutro",
+      id: "era5-outro",
+      progressLabel: "38,46%",
+      lines: [{ text: "Ainda falta bastante.", pause: "long" }],
+      cta: "PRÓXIMA ERA",
     },
   ],
 };

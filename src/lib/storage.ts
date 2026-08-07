@@ -1,14 +1,22 @@
 import { projectConfig } from "@/config/project";
-import { ERA_IDS } from "@/types/game";
-import type { EraId, EraStatus, GameProgress } from "@/types/game";
+import { ERA_IDS, PLAYABLE_ERA_IDS } from "@/types/game";
+import type {
+  EraId,
+  EraStatus,
+  GameProgress,
+  PlayableEraId,
+} from "@/types/game";
 
-export const SCHEMA_VERSION = 1 as const;
+export const SCHEMA_VERSION = 2 as const;
 
 export function createInitialProgress(): GameProgress {
   const eraStatuses = {} as Record<EraId, EraStatus>;
-  const eraSceneIndex = {} as Record<EraId, number>;
-  ERA_IDS.forEach((id, index) => {
-    eraStatuses[id] = index === 0 ? "available" : "locked";
+  ERA_IDS.forEach((id) => {
+    eraStatuses[id] = id === 1 ? "available" : "locked";
+  });
+
+  const eraSceneIndex = {} as Record<PlayableEraId, number>;
+  PLAYABLE_ERA_IDS.forEach((id) => {
     eraSceneIndex[id] = 0;
   });
 
@@ -21,11 +29,11 @@ export function createInitialProgress(): GameProgress {
     currentEra: 1,
     eraStatuses,
     eraSceneIndex,
-    completedEvents: [],
-    badges: [],
+    achievements: [],
     easterEggs: [],
-    compatibilityRevealed: false,
-    finalSequenceCompleted: false,
+    blankSpaceAnswer: "",
+    eraXiiiTapCount: 0,
+    finalStage: "playing",
   };
 }
 
@@ -35,8 +43,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 /**
  * Valida a forma mínima esperada de um GameProgress. Não tenta ser
- * exaustivo — o objetivo é recusar JSON corrompido/de versão incompatível
- * e cair de volta para um estado inicial seguro, nunca quebrar a UI.
+ * exaustivo — o objetivo é recusar JSON corrompido ou de versão
+ * incompatível e cair de volta para um estado inicial seguro, nunca
+ * quebrar a interface. Progresso salvo no fluxo antigo (schemaVersion 1)
+ * é descartado aqui de propósito: o formato mudou.
  */
 function isValidProgress(value: unknown): value is GameProgress {
   if (!isPlainObject(value)) return false;
@@ -44,8 +54,10 @@ function isValidProgress(value: unknown): value is GameProgress {
   if (typeof value.currentEra !== "number") return false;
   if (!isPlainObject(value.eraStatuses)) return false;
   if (!isPlainObject(value.eraSceneIndex)) return false;
-  if (!Array.isArray(value.completedEvents)) return false;
-  if (!Array.isArray(value.badges)) return false;
+  if (!Array.isArray(value.achievements)) return false;
+  if (!Array.isArray(value.easterEggs)) return false;
+  if (typeof value.blankSpaceAnswer !== "string") return false;
+  if (typeof value.finalStage !== "string") return false;
   return true;
 }
 

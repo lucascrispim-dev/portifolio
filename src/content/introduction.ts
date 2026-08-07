@@ -2,7 +2,7 @@ import { projectConfig } from "@/config/project";
 import type { NarratorLine } from "@/types/game";
 
 export const bootLines: NarratorLine[] = [
-  { text: "Inicializando...\n██████████████", pause: "short" },
+  { text: "Inicializando...", pause: "short" },
   { text: "Conexão estabelecida.", pause: "short" },
   { text: "Projeto localizado.", pause: "long" },
 ];
@@ -11,22 +11,23 @@ export const bootTitle = projectConfig.projectName;
 
 export const classificationHeader = "CLASSIFICAÇÃO\nCONFIDENCIAL";
 
-export const classificationAccessLines: NarratorLine[] = [
-  {
-    text: `Acesso permitido apenas para:\n✔ ${projectConfig.playerOneName}\n✔ ${projectConfig.playerTwoName}`,
-    pause: "long",
-  },
+export const classificationBlock: string[] = [
+  "Acesso permitido apenas para:",
+  projectConfig.playerOneName,
+  projectConfig.playerTwoName,
 ];
 
 export const classificationAnalyzing = "Identificando objetivo do projeto...";
 
-export const classificationResultLines: NarratorLine[] = [
-  { text: "Objetivo do projeto:\nACESSO NEGADO", pause: "long" },
-  { text: "Tempo estimado: ???\nPrêmio: ???", pause: "short" },
-  {
-    text: "Algumas informações\nnão precisam ser reveladas\nlogo no começo.",
-    pause: "long",
-  },
+export const classificationResultBlock: string[] = [
+  "Objetivo do projeto:",
+  "ACESSO NEGADO",
+  "",
+  "Tempo estimado:",
+  "INDEFINIDO",
+  "",
+  "Prêmio:",
+  "CLASSIFICADO",
 ];
 
 export const inviteLines: NarratorLine[] = [
@@ -37,36 +38,35 @@ export const inviteLines: NarratorLine[] = [
 
 export const noButtonExplodedLines: NarratorLine[] = [
   { text: "Parabéns.", pause: "short" },
-  { text: "Você encontrou\num Easter Egg.", pause: "short" },
-  { text: "Mas eu já sabia\nque você não ia desistir.", pause: "short" },
-  { text: "Então removi\nessa opção. 🙂", pause: "long" },
-];
-
-export const acceptedResponseLines: NarratorLine[] = [
-  { text: "Resposta aceita.", pause: "short" },
-  { text: "Embora você não tivesse\nmuita escolha.", pause: "long" },
+  { text: "Você encontrou\no primeiro Easter Egg.", pause: "short" },
+  { text: "Mas eu sabia\nque você não desistiria.", pause: "short" },
+  { text: "Então removi\nessa opção.", pause: "short" },
+  { text: "Agora escolha\nentre Sim e Sim.", pause: "long" },
 ];
 
 export const termsItems: string[] = [
-  "Vai aproveitar o dia.",
-  "Vai rir de pelo menos uma piada ruim.",
-  "Não vai tentar descobrir o final.",
-  "Não vai pressionar o desenvolvedor.",
-  "Aceita que este projeto pode conter bugs emocionais.",
-  "Concorda que Taylor Swift melhora qualquer situação.",
-  `Caso encontre algum problema, abraçará ${projectConfig.playerOneName} por 20 segundos.`,
-  "Aceita que algumas etapas dependerão de acontecimentos fora da tela.",
-  "Entende que não é possível apressar uma boa história.",
+  "Vai ler antes de apertar os botões.",
+  "Não tentará descobrir o final.",
+  "Não pressionará o desenvolvedor.",
+  "Aceita que Taylor Swift melhora qualquer situação.",
+  "Aceita a presença de bugs emocionais.",
+  "Não tentará acessar a Era XIII antes da hora.",
+  `Aceita ser chamado de ${projectConfig.playerTwoName}.`,
+  "Aceita que o desenvolvedor é dramático.",
+  "Concorda que qualquer reclamação poderá resultar em mais perguntas.",
+  "Entende que o desenvolvedor não se responsabiliza por surtos, confetes ou sentimentos.",
 ];
 
 export const termsFastClickLines: NarratorLine[] = [
-  { text: "Leu mesmo?", pause: "short" },
+  { text: "Leu?", pause: "short" },
+  { text: `${projectConfig.playerTwoName},\nnem deu tempo.`, pause: "short" },
   { text: "Tudo bem.\nVou fingir que acredito.", pause: "long" },
 ];
 
-/** Abaixo do qual um clique em "Li absolutamente tudo" é considerado rápido demais. */
-export const TERMS_FAST_CLICK_THRESHOLD_MS = 1800;
+/** Abaixo disso, o clique em "Li absolutamente tudo" conta como rápido demais. */
+export const TERMS_FAST_CLICK_THRESHOLD_MS = 2500;
 
-export const eraOneIntroLines: NarratorLine[] = [
-  { text: "Toda história precisa de um primeiro acontecimento.", pause: "short" },
+/** Primeira aparição do mapa, logo depois dos termos. */
+export const progressMapIntroLines: NarratorLine[] = [
+  { text: "Antes de começar,\nveja o que existe pela frente.", pause: "long" },
 ];

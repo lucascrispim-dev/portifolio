@@ -92,12 +92,33 @@ const fontVariables = [
  * tipo gerado dentro de `.next/`, então `npm run typecheck` falharia em um
  * clone novo, antes do primeiro build.
  */
+/**
+ * Recado escondido para quem abrir o inspetor. Precisa ser injetado como
+ * HTML cru: comentários JSX não chegam à página servida.
+ */
+const HIDDEN_COMMENT = `<!--
+${projectConfig.playerTwoName}:
+
+Se você encontrou isto,
+pare de inspecionar o código.
+
+A Era XIII não está aqui.
+
+E beba água, mijão.
+-->`;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" className={`${fontVariables} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-black">{children}</body>
+      <body className="min-h-full flex flex-col bg-black">
+        <div
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: HIDDEN_COMMENT }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

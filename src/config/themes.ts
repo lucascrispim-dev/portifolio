@@ -1,17 +1,15 @@
-import type { EraId, EraTheme } from "@/types/game";
+import type { EraTheme, PlayableEraId } from "@/types/game";
 
 /**
- * Sistema de temas das 8 Eras. Cada Era muda fundo, contraste, cor de
- * destaque, textura, forma dos cartões (radius) e tipografia de título —
- * não é apenas uma troca de cor de fundo. As famílias tipográficas
- * referenciam variáveis CSS registradas em layout.tsx via next/font.
+ * Sistema de temas das 8 Eras jogáveis. Cada Era muda fundo, contraste,
+ * cor de destaque, textura, forma dos cartões (radius) e tipografia de
+ * título — não é apenas uma troca de cor de fundo. As famílias
+ * tipográficas referenciam variáveis CSS registradas em layout.tsx.
  *
- * Paleta base (fundo/destaque) replicada fielmente da tabela do roteiro;
- * cor secundária/texto/`buttonTextColor` foram definidas para garantir
- * contraste e coerência de atmosfera por Era (decisão de design, não
- * texto narrativo).
+ * As Eras IX a XIII não têm tema porque nunca são jogadas: existem apenas
+ * como nomes no mapa de progresso.
  */
-export const eraThemes: Record<EraId, EraTheme> = {
+export const eraThemes: Record<PlayableEraId, EraTheme> = {
   1: {
     background: "#A8BFA0",
     backgroundGradient:
