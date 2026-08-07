@@ -26,7 +26,7 @@ Três regras estruturais:
 | Etapa | O que acontece |
 |---|---|
 | Introdução | Boot, classificação confidencial, convite, botão "Não" que foge 8× e explode (🏆 PERSISTÊNCIA QUESTIONÁVEL), termos de uso, "Bem-vindo, Cacau Nazaret." |
-| Era I — Begin Again | Pergunta o nome e o recusa; escala de 1 a 13; OUR/SONG; medidor de Taylor Swift em EXCESSIVA. Progresso: 8% → "recalculando" → 41% |
+| Era I — Debut | Pergunta o nome e o recusa; escala de 1 a 13; OUR/SONG; medidor de Taylor Swift em EXCESSIVA. Progresso: 8% → "recalculando" → 41% |
 | Era II — Fearless | Toy Story, Villa-Lobos, pizza, Toy Story de novo; LOVE + STORY. Progresso: 73% → 18% |
 | Era III — Speak Now | Duas perguntas abertas; o celular é entregue ao Lucas (escolha A/B/C secreta); treze estrelas, a última foge três vezes. **Termina em ERRO 13.** |
 | ERRO 13 | Salvando → 99% → trava → glitch → FALHA CRÍTICA → REINICIAR → a introdução inteira de novo. Desta vez o "Não" fica parado e ele consegue clicar → "Dessa vez você conseguiu. Mas não importa." → "VOCÊ REALMENTE ACHOU QUE EU TINHA APAGADO TUDO?" → progresso restaurado (🏆 BAD IDEA RIGHT?) |

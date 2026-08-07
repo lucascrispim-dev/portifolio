@@ -14,7 +14,7 @@ Sem backend, sem banco de dados. Não há cronômetro, senha, localização, pai
 
 Até o jogador tocar em **ENCERRAR**, tudo na tela sustenta que a história continua depois:
 
-- o mapa lista 13 Eras, com as Eras IX a XII em **"???"** e a XIII em **CLASSIFICADO**, pulsando;
+- o mapa lista 13 Eras, com as Eras IX a XII já nomeadas com os álbuns seguintes (evermore, Midnights, The Tortured Poets Department, The Life of a Showgirl) e a XIII em **CLASSIFICADO**, pulsando;
 - a compatibilidade sobe em múltiplos de 13 e **sempre trava em 99%**, com o 1% restante atribuído à Era XIII;
 - o progresso exibido é declarado pelo conteúdo, não calculado: ele sobe, "recalcula" e **desce** (73% → 18%, 91% → 89%);
 - a Era VI oferece "VER RESPOSTA DE LUCAS" e responde ACESSO NEGADO, disponível na Era XIII;

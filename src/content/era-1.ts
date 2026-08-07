@@ -1,9 +1,9 @@
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
-const BEGIN_AGAIN = {
-  id: "begin-again",
-  title: "BEGIN AGAIN",
+const DEBUT = {
+  id: "debut",
+  title: "DEBUT",
   description:
     "Você concluiu uma Era sem saber absolutamente nada sobre o prêmio.",
 };
@@ -16,10 +16,10 @@ const BEGIN_AGAIN = {
 export const era1: EraDefinition = {
   id: 1,
   code: "I",
-  title: "Begin Again",
+  title: "Debut",
   album: "Taylor Swift",
   theme: eraThemes[1],
-  achievements: [BEGIN_AGAIN],
+  achievements: [DEBUT],
   screens: [
     // O mapa abre o jogo: é ele que planta a ideia de que existem treze
     // Eras, quatro delas ilegíveis e uma classificada.
@@ -28,7 +28,7 @@ export const era1: EraDefinition = {
       kind: "titleCard",
       id: "era1-title",
       eraLabel: "ERA I",
-      title: "Begin Again",
+      title: "Debut",
       tagline: [
         { text: "Toda história\nprecisa começar\nem algum lugar.", pause: "short" },
         {
@@ -61,7 +61,7 @@ export const era1: EraDefinition = {
       kind: "reveal",
       id: "era1-achievement",
       lines: [],
-      achievement: BEGIN_AGAIN,
+      achievement: DEBUT,
     },
     {
       kind: "eraOutro",
