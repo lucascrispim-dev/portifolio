@@ -2,6 +2,7 @@ import { PLAYABLE_ERA_IDS, LAST_PLAYABLE_ERA } from "@/types/game";
 import type {
   EraId,
   EraStatus,
+  FakeResetStage,
   FinalStage,
   GameProgress,
   PlayableEraId,
@@ -17,12 +18,15 @@ export type GameAction =
   | { type: "ERA_COMPLETE"; era: PlayableEraId }
   | { type: "ADD_ACHIEVEMENT"; achievementId: string }
   | { type: "ADD_EASTER_EGG"; id: string }
-  | { type: "SET_BLANK_SPACE"; text: string }
+  | { type: "SET_OPEN_ANSWER"; questionId: string; text: string }
+  | { type: "SET_LUCAS_CHOICE"; choice: string }
+  | { type: "LOSE_PATIENCE"; to: number }
+  | { type: "SET_FAKE_RESET_STAGE"; stage: FakeResetStage }
   | { type: "ERA_XIII_TAP" }
   | { type: "SET_FINAL_STAGE"; stage: FinalStage }
   | { type: "DEV_RESET" }
   | { type: "DEV_SET_ERA"; era: PlayableEraId }
-  | { type: "DEV_UNLOCK_ALL" };
+  | { type: "DEV_SET_FINAL_STAGE"; stage: FinalStage };
 
 function nextPlayableEra(era: PlayableEraId): PlayableEraId | null {
   const index = PLAYABLE_ERA_IDS.indexOf(era);
@@ -37,6 +41,16 @@ function addUnique<T>(list: T[], value: T): T[] {
 function isEraPlayable(status: EraStatus): boolean {
   return status === "available" || status === "active";
 }
+
+/** Ordem da sequência final — usada para impedir que ela ande para trás. */
+const FINAL_ORDER: FinalStage[] = [
+  "playing",
+  "confession",
+  "eraXiii",
+  "transferring",
+  "lookAtHim",
+  "answered",
+];
 
 export function transition(
   progress: GameProgress,
@@ -70,10 +84,9 @@ export function transition(
     }
 
     /**
-     * Progressão contínua: concluir uma Era abre a próxima na hora, sem
-     * espera nem confirmação de acontecimento real. A Era VIII é a última
-     * jogável — o que vem depois dela é a sequência de interrupção, não
-     * uma Era IX (que nunca existe).
+     * Progressão contínua: concluir uma Era abre a próxima na hora. A
+     * Era VIII é a última jogável — depois dela vem a confissão, não uma
+     * Era IX (que nunca existe).
      */
     case "ERA_COMPLETE": {
       const status = progress.eraStatuses[action.era];
@@ -107,14 +120,35 @@ export function transition(
         easterEggs: addUnique(progress.easterEggs, action.id),
       };
 
-    case "SET_BLANK_SPACE":
-      return { ...progress, blankSpaceAnswer: action.text };
+    case "SET_OPEN_ANSWER":
+      return {
+        ...progress,
+        openAnswers: {
+          ...progress.openAnswers,
+          [action.questionId]: action.text,
+        },
+      };
+
+    case "SET_LUCAS_CHOICE":
+      return { ...progress, lucasChoice: action.choice };
+
+    /** A paciência é de mão única: nenhum caminho a devolve. */
+    case "LOSE_PATIENCE":
+      return { ...progress, patience: Math.min(progress.patience, action.to) };
+
+    case "SET_FAKE_RESET_STAGE":
+      return { ...progress, fakeResetStage: action.stage };
 
     case "ERA_XIII_TAP":
       return { ...progress, eraXiiiTapCount: progress.eraXiiiTapCount + 1 };
 
-    case "SET_FINAL_STAGE":
+    /** A sequência final nunca volta atrás — nem por recarregar a página. */
+    case "SET_FINAL_STAGE": {
+      const current = FINAL_ORDER.indexOf(progress.finalStage);
+      const next = FINAL_ORDER.indexOf(action.stage);
+      if (next <= current) return progress;
       return { ...progress, finalStage: action.stage };
+    }
 
     case "DEV_RESET":
       return createInitialProgress();
@@ -133,29 +167,21 @@ export function transition(
         currentEra: action.era,
         eraStatuses,
         eraSceneIndex: { ...progress.eraSceneIndex, [action.era]: 0 },
+        fakeResetStage: "none",
         finalStage: "playing",
       };
     }
 
-    case "DEV_UNLOCK_ALL": {
-      const eraStatuses = { ...progress.eraStatuses };
-      PLAYABLE_ERA_IDS.forEach((id) => {
-        if (eraStatuses[id] === "locked") eraStatuses[id] = "available";
-      });
-      return {
-        ...progress,
-        eraStatuses,
-        introCompleted: true,
-        termsAccepted: true,
-      };
-    }
+    /** Só o painel de dev pode mover a sequência final livremente (ensaio). */
+    case "DEV_SET_FINAL_STAGE":
+      return { ...progress, finalStage: action.stage };
 
     default:
       return progress;
   }
 }
 
-/** A Era VIII é a última jogável: depois dela vem a interrupção. */
+/** A Era VIII é a última jogável: depois dela vem o falso encerramento. */
 export function isLastPlayableEra(era: PlayableEraId): boolean {
   return era === LAST_PLAYABLE_ERA;
 }

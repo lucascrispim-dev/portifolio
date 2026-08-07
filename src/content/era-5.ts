@@ -6,13 +6,28 @@ const ESPECIALISTA = {
   title: "ESPECIALISTA EM LUCAS",
 };
 
+const OUT_OF_THE_WOODS = {
+  id: "out-of-the-woods",
+  title: "OUT OF THE WOODS",
+};
+
+const TRICOLOR = {
+  id: "tricolor",
+  title: "TRICOLOR",
+};
+
+/**
+ * Era V — a mais longa e a mais cansativa de propósito: leite, um
+ * labirinto que sempre volta ao começo e uma cobrança de pênalti que só
+ * entra na terceira tentativa. É onde a paciência termina de acabar.
+ */
 export const era5: EraDefinition = {
   id: 5,
   code: "V",
   title: "1989",
   album: "1989",
   theme: eraThemes[5],
-  achievements: [ESPECIALISTA],
+  achievements: [ESPECIALISTA, OUT_OF_THE_WOODS, TRICOLOR],
   screens: [
     {
       kind: "titleCard",
@@ -47,10 +62,51 @@ export const era5: EraDefinition = {
     },
     {
       kind: "quiz",
-      id: "era5-eggs",
-      prompt: [
-        { text: "Até agora,\nquantos Easter Eggs\nvocê encontrou?" },
+      id: "era5-leite-quantidade",
+      prompt: [{ text: "Quanto leite?" }],
+      options: [
+        { id: "copo", label: "Um copo." },
+        { id: "caixa", label: "Uma caixa." },
+        { id: "muito", label: "Mais do que qualquer médico recomendaria." },
+        { id: "nao-quero-saber", label: "Não quero mais falar sobre leite." },
       ],
+      anyAnswerAccepted: true,
+      onCorrect: [
+        { text: "Resposta registrada.", pause: "short" },
+        { text: "E preocupante.", pause: "long" },
+      ],
+    },
+    { kind: "minigame", id: "era5-labirinto", game: "woodsLabyrinth" },
+    {
+      kind: "quiz",
+      id: "era5-futebol",
+      prompt: [
+        { text: "Pergunta de segurança.", pause: "short" },
+        { text: "Para qual time\nvocê torce?" },
+      ],
+      options: [
+        { id: "spfc", label: "São Paulo Futebol Clube.", correct: true },
+        { id: "corinthians", label: "Corinthians." },
+        { id: "palmeiras", label: "Palmeiras." },
+        { id: "nenhum", label: "Não gosto de futebol." },
+      ],
+      onWrong: [
+        { text: "ERRO.", pause: "short" },
+        {
+          text: "Resposta incompatível\ncom ambiente de produção.",
+          pause: "short",
+        },
+      ],
+      onCorrect: [
+        { text: "Resposta correta.", pause: "short" },
+        { text: "Não havia alternativa.", pause: "long" },
+      ],
+    },
+    { kind: "minigame", id: "era5-penalti", game: "penaltyShootout" },
+    {
+      kind: "quiz",
+      id: "era5-eggs",
+      prompt: [{ text: "Até agora,\nquantos Easter Eggs\nvocê encontrou?" }],
       options: [
         { id: "nenhum", label: "Nenhum." },
         { id: "alguns", label: "Alguns." },
@@ -65,46 +121,15 @@ export const era5: EraDefinition = {
       ],
     },
     {
-      kind: "quiz",
-      id: "era5-hoje",
-      prompt: [{ text: "O que provavelmente\nacontecerá hoje?" }],
-      options: [
-        { id: "inesperado", label: "Algo inesperado." },
-        { id: "taylor", label: "Taylor Swift será mencionada novamente." },
-        { id: "supra", label: "Iremos ao Supra." },
-        { id: "todas", label: "Todas as alternativas.", correct: true },
-      ],
-      onWrong: [{ text: "Incompleto.\nPensa maior." }],
-      onCorrect: [
-        { text: "Previsão registrada.", pause: "short" },
-        {
-          text: "O sistema não fornecerá\ndetalhes adicionais.",
-          pause: "long",
-        },
-      ],
-    },
-    {
-      kind: "quiz",
-      id: "era5-risco",
-      prompt: [{ text: "Qual é o maior risco\ndeste projeto?" }],
-      options: [
-        { id: "travar", label: "O site travar." },
-        { id: "roteiro", label: "Lucas esquecer o roteiro." },
-        { id: "final", label: "Você descobrir o final." },
-        {
-          id: "leite",
-          label: "Faltar leite.",
-          response: [{ text: "Risco crítico identificado.", pause: "long" }],
-        },
-      ],
-      anyAnswerAccepted: true,
-      onCorrect: [{ text: "Risco registrado.", pause: "long" }],
-    },
-    { kind: "minigame", id: "era5-blank-space", game: "blankSpace" },
-    {
       kind: "eraOutro",
       id: "era5-outro",
-      progressLabel: "38,46%",
+      progressLabel: "60%",
+      recalculatedLabel: "60%",
+      recalculatedLines: [
+        { text: "Nenhuma alteração.", pause: "short" },
+        { text: "Estranho.", pause: "short" },
+        { text: "Deve estar certo, então.", pause: "long" },
+      ],
       lines: [{ text: "Ainda falta bastante.", pause: "long" }],
       cta: "PRÓXIMA ERA",
     },

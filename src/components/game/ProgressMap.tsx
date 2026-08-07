@@ -2,34 +2,40 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { AchievementCard } from "@/components/game/AchievementCard";
 import { ChoiceButton } from "@/components/game/ChoiceButton";
 import { NarratorText } from "@/components/game/NarratorText";
 import { useEraTheme } from "@/components/game/EraThemeProvider";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { projectConfig } from "@/config/project";
 import {
+  ERA_XIII_SECRET_TAP,
   eraCatalog,
   eraThirteenCard,
+  eraThirteenSecretAchievement,
+  eraThirteenSecretResponse,
   eraThirteenTapResponses,
   lockedEraMessage,
 } from "@/content/era-catalog";
 import type { EraId, EraStatus, NarratorLine } from "@/types/game";
 
 /**
- * O mapa é o principal sustentáculo da ficção: mostra 13 Eras com nomes
- * legítimos de álbuns, de modo que a lista pareça um plano completo e não
- * denuncie que o conteúdo acaba na Era VIII.
+ * O mapa sustenta a ficção inteira: 13 Eras, as quatro últimas ocultas em
+ * "???" e a XIII classificada e pulsando. É para ele acreditar que existe
+ * um final guardado para outro dia.
  */
 export function ProgressMap({
   eraStatuses,
   eraXiiiTapCount,
   onEraXiiiTap,
+  onAchievement,
   onContinue,
   cta,
 }: {
   eraStatuses: Record<EraId, EraStatus>;
   eraXiiiTapCount: number;
   onEraXiiiTap: () => void;
+  onAchievement: (id: string) => void;
   onContinue: () => void;
   cta: string;
 }) {
@@ -37,16 +43,27 @@ export function ProgressMap({
   const reducedMotion = useReducedMotion();
   const [lockedMessage, setLockedMessage] = useState<string | null>(null);
   const [xiiiLines, setXiiiLines] = useState<NarratorLine[] | null>(null);
+  const [secretFound, setSecretFound] = useState(false);
 
-  function handleLockedTap(label: string, title: string) {
+  function handleLockedTap(label: string) {
     setXiiiLines(null);
-    setLockedMessage(lockedEraMessage(label, title));
+    setSecretFound(false);
+    setLockedMessage(lockedEraMessage(label));
   }
 
   function handleEraXiiiTap() {
     setLockedMessage(null);
-    const index = Math.min(eraXiiiTapCount, eraThirteenTapResponses.length - 1);
-    setXiiiLines(eraThirteenTapResponses[index]);
+    const attempt = eraXiiiTapCount + 1;
+
+    if (attempt === ERA_XIII_SECRET_TAP) {
+      setXiiiLines(eraThirteenSecretResponse);
+      setSecretFound(true);
+    } else {
+      const index = Math.min(attempt - 1, eraThirteenTapResponses.length - 1);
+      setXiiiLines(eraThirteenTapResponses[index]);
+      setSecretFound(false);
+    }
+
     onEraXiiiTap();
   }
 
@@ -57,9 +74,6 @@ export function ProgressMap({
       <div className="flex flex-col gap-1">
         <p className="font-mono text-xs tracking-[0.25em] opacity-70">
           {projectConfig.projectName}
-        </p>
-        <p className="font-mono text-xs tracking-[0.25em] opacity-50">
-          PROGRESSO GERAL
         </p>
       </div>
 
@@ -80,9 +94,7 @@ export function ProgressMap({
                 type="button"
                 disabled={entry.playable}
                 onClick={
-                  entry.playable
-                    ? undefined
-                    : () => handleLockedTap(entry.label, entry.title)
+                  entry.playable ? undefined : () => handleLockedTap(entry.label)
                 }
                 aria-label={`Era ${entry.label} — ${entry.title}`}
                 className="flex min-h-11 w-full items-center gap-3 py-1 text-left font-mono text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-default"
@@ -103,14 +115,22 @@ export function ProgressMap({
         })}
       </ul>
 
-      {/* A Era XIII ganha destaque de cartão: é a promessa que nunca se cumpre. */}
+      {/* A Era XIII pulsa discretamente: é a isca da experiência inteira. */}
       <motion.button
         type="button"
         onClick={handleEraXiiiTap}
-        aria-label="Era 13 — THE NEXT CHAPTER (bloqueada)"
+        aria-label="Era 13 — THE NEXT CHAPTER (classificado)"
         initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: reducedMotion ? 0 : 0.5 }}
+        animate={
+          reducedMotion
+            ? { opacity: 1, y: 0 }
+            : { opacity: [0.75, 1, 0.75], y: 0 }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0.3 }
+            : { opacity: { duration: 3.2, repeat: Infinity }, y: { duration: 0.4 } }
+        }
         className="flex flex-col gap-2 border p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{
           borderRadius: theme.radius,
@@ -118,7 +138,10 @@ export function ProgressMap({
           backgroundColor: `${theme.foreground}12`,
         }}
       >
-        <span className="font-mono text-xs tracking-[0.3em]" style={{ color: theme.accent }}>
+        <span
+          className="font-mono text-xs tracking-[0.3em]"
+          style={{ color: theme.accent }}
+        >
           {eraThirteenCard.eraLabel}
         </span>
         <span
@@ -127,13 +150,8 @@ export function ProgressMap({
         >
           {eraThirteenCard.title}
         </span>
-        {eraThirteenCard.lines.map((line) => (
-          <span key={line} className="whitespace-pre-line text-sm opacity-80">
-            {line}
-          </span>
-        ))}
         <span className="font-mono text-[11px] tracking-[0.2em] opacity-60">
-          BLOQUEADA
+          STATUS: {eraThirteenCard.status}
         </span>
       </motion.button>
 
@@ -142,9 +160,9 @@ export function ProgressMap({
       </div>
 
       {/*
-        A lista das 13 Eras é mais alta que a tela do celular, então a
-        resposta precisa ficar fixa na viewport: renderizada no fluxo, ela
-        apareceria fora de vista e o toque pareceria não ter feito nada.
+        A lista é mais alta que a tela do celular, então a resposta fica
+        fixa na viewport: renderizada no fluxo, apareceria fora de vista e
+        o toque pareceria não ter feito nada.
       */}
       {lockedMessage || xiiiLines ? (
         <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-6">
@@ -171,6 +189,14 @@ export function ProgressMap({
                 className="flex flex-col gap-2"
                 lineClassName="whitespace-pre-line text-[14px] leading-relaxed"
               />
+            ) : null}
+            {secretFound ? (
+              <div className="pt-3">
+                <AchievementCard
+                  achievement={eraThirteenSecretAchievement}
+                  onUnlock={onAchievement}
+                />
+              </div>
             ) : null}
           </div>
         </div>

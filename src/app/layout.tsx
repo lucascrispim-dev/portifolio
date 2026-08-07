@@ -97,7 +97,7 @@ const fontVariables = [
  * HTML cru: comentários JSX não chegam à página servida.
  */
 const HIDDEN_COMMENT = `<!--
-${projectConfig.playerTwoName}:
+${projectConfig.playerTwoJokeName}:
 
 Se você encontrou isto,
 pare de inspecionar o código.

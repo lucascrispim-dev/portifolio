@@ -1,13 +1,23 @@
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
+const FEARLESSLY_CURIOUS = {
+  id: "fearlessly-curious",
+  title: "FEARLESSLY CURIOUS",
+};
+
+/**
+ * Era II — quatro perguntas de memória, todas sobre coisas pequenas
+ * demais para alguém ter anotado. É onde o jogo estabelece que ele
+ * sabe mais sobre vocês dois do que deveria.
+ */
 export const era2: EraDefinition = {
   id: 2,
   code: "II",
   title: "Fearless",
   album: "Fearless",
   theme: eraThemes[2],
-  achievements: [{ id: "fearlessly-curious", title: "FEARLESSLY CURIOUS" }],
+  achievements: [FEARLESSLY_CURIOUS],
   screens: [
     {
       kind: "titleCard",
@@ -35,37 +45,85 @@ export const era2: EraDefinition = {
       ],
       onWrong: [{ text: "Não.\nPensa melhor." }],
       onCorrect: [
-        { text: "Arquivo recuperado:\nToday Was a Fairytale", pause: "short" },
+        { text: "Arquivo recuperado.", pause: "short" },
         { text: "Tecnicamente não foi hoje.", pause: "short" },
         { text: "Mas o sistema\ngostou da referência.", pause: "long" },
       ],
     },
     {
       kind: "quiz",
-      id: "era2-musicas",
-      prompt: [{ text: "Quem manda mais músicas\nda Taylor Swift?" }],
+      id: "era2-villa-lobos",
+      prompt: [{ text: "Onde vocês passaram\num dia inteiro\nsem fazer absolutamente nada?" }],
       options: [
-        { id: "lucas-1", label: "Lucas." },
-        { id: "lucas-2", label: "Lucas." },
-        { id: "lucas-3", label: "Lucas." },
-        { id: "todas", label: "Todas as anteriores." },
+        { id: "villa-lobos", label: "Villa-Lobos.", correct: true },
+        { id: "ibirapuera", label: "Ibirapuera." },
+        { id: "paulista", label: "Paulista." },
+        { id: "casa", label: "Em casa, deitados." },
       ],
-      anyAnswerAccepted: true,
+      onWrong: [{ text: "Errado.\nE eu estava lá." }],
       onCorrect: [
-        { text: "Diagnóstico confirmado.", pause: "short" },
-        { text: "Lucas não envia músicas.", pause: "short" },
-        {
-          text: "Lucas administra\numa distribuidora\nnão autorizada\nde Taylor Swift.",
-          pause: "long",
-        },
+        { text: "Villa-Lobos confirmado.", pause: "short" },
+        { text: "Grama, sol\ne nenhuma produtividade.", pause: "short" },
+        { text: "Um dos melhores dias\nregistrados neste sistema.", pause: "long" },
       ],
     },
-    { kind: "minigame", id: "era2-nao-toque", game: "noTouchButton" },
+    {
+      kind: "quiz",
+      id: "era2-pizza",
+      prompt: [{ text: "Qual comida aparece\nem quantidade estatisticamente\nsuspeita nesta relação?" }],
+      options: [
+        { id: "pizza", label: "Pizza.", correct: true },
+        { id: "sushi", label: "Sushi." },
+        { id: "hamburguer", label: "Hambúrguer." },
+        { id: "salada", label: "Salada." },
+      ],
+      onWrong: [
+        { text: "Não.", pause: "short" },
+        { text: "E essa resposta\nchega a ofender.", pause: "short" },
+      ],
+      onCorrect: [
+        { text: "Pizza.", pause: "short" },
+        { text: "Sempre pizza.", pause: "short" },
+        { text: "Conquista liberada\npor mérito questionável.", pause: "long" },
+      ],
+      achievement: FEARLESSLY_CURIOUS,
+    },
+    {
+      kind: "quiz",
+      id: "era2-toy-story-de-novo",
+      prompt: [
+        { text: "Última pergunta desta Era.", pause: "short" },
+        { text: "Qual filme marcou\na história de vocês?" },
+      ],
+      options: [
+        { id: "toy-story", label: "Toy Story.", correct: true },
+        { id: "de-novo", label: "Você já perguntou isso." },
+        { id: "serio", label: "Sério mesmo?" },
+        { id: "toy-story-2", label: "Toy Story. De novo." },
+      ],
+      onWrong: [
+        { text: "Eu sei.", pause: "short" },
+        { text: "Responde assim mesmo.", pause: "short" },
+      ],
+      onCorrect: [
+        { text: "Ótimo.", pause: "short" },
+        { text: "Era só para confirmar\nque você presta atenção.", pause: "short" },
+        { text: "Você presta.", pause: "long" },
+      ],
+    },
+    { kind: "minigame", id: "era2-love-story", game: "loveStory" },
     {
       kind: "eraOutro",
       id: "era2-outro",
-      progressLabel: "2 de 13",
-      lines: [{ text: "A Era XIII\ncontinua muito longe.", pause: "long" }],
+      // O golpe do contador: sobe para 73% e "recalcula" para 18%.
+      progressLabel: "73%",
+      recalculatedLabel: "18%",
+      recalculatedLines: [
+        { text: "Houve um engano.", pause: "short" },
+        { text: "Não era 73%.", pause: "long" },
+        { text: "A Era XIII\ncontinua muito longe.", pause: "long" },
+      ],
+      lines: [{ text: "Progresso atualizado.", pause: "short" }],
       cta: "PRÓXIMA ERA",
     },
   ],

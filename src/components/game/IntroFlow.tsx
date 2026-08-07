@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { AchievementCard } from "@/components/game/AchievementCard";
 import { ChoiceButton } from "@/components/game/ChoiceButton";
 import { EscapingButton } from "@/components/game/EscapingButton";
 import { LoadingSequence } from "@/components/game/LoadingSequence";
@@ -32,6 +33,7 @@ export function IntroFlow({
   const theme = useEraTheme();
   const [step, setStep] = useState<Step>("boot");
   const [inviteAccepted, setInviteAccepted] = useState(false);
+  const [welcomeDone, setWelcomeDone] = useState(false);
   const [noButtonMessage, setNoButtonMessage] = useState<string | null>(null);
   const termsMountedAt = useRef(0);
   const [showFastClickWarning, setShowFastClickWarning] = useState(false);
@@ -117,7 +119,15 @@ export function IntroFlow({
           ) : null}
 
           {!inviteAccepted && progress.noButtonDestroyed ? (
-            <NarratorText lines={intro.noButtonExplodedLines} />
+            <div className="flex flex-col gap-5">
+              <NarratorText lines={intro.noButtonExplodedLines} />
+              <AchievementCard
+                achievement={intro.noButtonAchievement}
+                onUnlock={(id) =>
+                  dispatch({ type: "ADD_ACHIEVEMENT", achievementId: id })
+                }
+              />
+            </div>
           ) : null}
 
           {!inviteAccepted ? (
@@ -144,14 +154,20 @@ export function IntroFlow({
             </div>
           ) : (
             <div className="flex flex-col gap-5">
-              <ChoiceButton
-                onClick={() => {
-                  termsMountedAt.current = Date.now();
-                  setStep("terms");
-                }}
-              >
-                CONTINUAR
-              </ChoiceButton>
+              <NarratorText
+                lines={intro.welcomeLines}
+                onDone={() => setWelcomeDone(true)}
+              />
+              {welcomeDone ? (
+                <ChoiceButton
+                  onClick={() => {
+                    termsMountedAt.current = Date.now();
+                    setStep("terms");
+                  }}
+                >
+                  CONTINUAR
+                </ChoiceButton>
+              ) : null}
             </div>
           )}
         </div>

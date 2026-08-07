@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  ERA_XIII_SECRET_TAP,
   eraCatalog,
+  eraThirteenSecretResponse,
   eraThirteenTapResponses,
   lockedEraMessage,
 } from "@/content/era-catalog";
@@ -18,26 +20,18 @@ describe("catálogo das 13 Eras", () => {
   });
 
   /**
-   * O truque depende disto: as Eras IX a XII precisam parecer conteúdo
-   * planejado. Se voltarem a exibir "arquivo não encontrado", o jogador
-   * percebe que a história acaba na Era VIII.
+   * A direção definitiva pede mistério, não um plano legível: as Eras IX
+   * a XII são "???". Um nome real ali entregaria que existe um roteiro
+   * escrito além da Era VIII.
    */
-  it("as Eras IX a XII têm nomes reais de álbuns", () => {
+  it("as Eras IX a XII são ilegíveis", () => {
     const names = eraCatalog
       .filter((e) => e.id >= 9 && e.id <= 12)
       .map((e) => e.title);
-    expect(names).toEqual([
-      "evermore",
-      "Midnights",
-      "The Tortured Poets Department",
-      "The Life of a Showgirl",
-    ]);
-    for (const name of names) {
-      expect(name.toLowerCase()).not.toContain("não encontrado");
-    }
+    expect(names).toEqual(["???", "???", "???", "???"]);
   });
 
-  it("a Era XIII é a única chamada THE NEXT CHAPTER", () => {
+  it("a Era XIII é a única nomeada e nunca é jogável", () => {
     const thirteen = eraCatalog.find((e) => e.id === 13);
     expect(thirteen?.title).toBe("THE NEXT CHAPTER");
     expect(thirteen?.playable).toBe(false);
@@ -51,18 +45,22 @@ describe("catálogo das 13 Eras", () => {
 });
 
 describe("tentativas de abrir a Era XIII", () => {
-  it("tem cinco respostas, em ordem", () => {
-    expect(eraThirteenTapResponses).toHaveLength(5);
-    expect(eraThirteenTapResponses[0][0].text).toContain("pular do capítulo 1");
-    expect(eraThirteenTapResponses[1][0].text).toContain("Cacau Nazaret");
-    expect(eraThirteenTapResponses[2][0].text).toContain("🖕");
-    expect(eraThirteenTapResponses[3][0].text).toContain("Continuar clicando");
-    expect(eraThirteenTapResponses[4][0].text).toContain("falta de paciência");
+  it("tem oito respostas, em ordem", () => {
+    expect(eraThirteenTapResponses).toHaveLength(8);
+    expect(eraThirteenTapResponses[0][0].text).toContain("ACESSO NEGADO");
+    expect(eraThirteenTapResponses[3][0].text).toContain("Cacau Nazaret");
+    expect(eraThirteenTapResponses[4][0].text).toContain("🖕");
+    expect(eraThirteenTapResponses[7][0].text).toContain("esperar");
   });
 
+  it("guarda a resposta secreta para a décima terceira tentativa", () => {
+    expect(ERA_XIII_SECRET_TAP).toBe(13);
+    expect(eraThirteenSecretResponse.length).toBeGreaterThan(0);
+  });
+
+  /** 🏆 e 🖕 são os dois únicos emojis permitidos na interface. */
   it("só usa os dois emojis permitidos", () => {
-    const todos = eraThirteenTapResponses
-      .flat()
+    const todos = [...eraThirteenTapResponses.flat(), ...eraThirteenSecretResponse]
       .map((line) => line.text)
       .join(" ");
     expect(todos).not.toContain("☝️");
@@ -72,9 +70,7 @@ describe("tentativas de abrir a Era XIII", () => {
 });
 
 describe("mensagem das Eras bloqueadas", () => {
-  it("informa que a Era ainda não foi escrita", () => {
-    expect(lockedEraMessage("09", "evermore")).toBe(
-      "ERA 09 — EVERMORE\nAINDA NÃO ESCRITA"
-    );
+  it("informa que a Era ainda não foi desenvolvida", () => {
+    expect(lockedEraMessage("09")).toBe("ERA 09\nAINDA NÃO DESENVOLVIDA");
   });
 });

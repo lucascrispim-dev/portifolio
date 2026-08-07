@@ -8,6 +8,11 @@ const BEGIN_AGAIN = {
     "Você concluiu uma Era sem saber absolutamente nada sobre o prêmio.",
 };
 
+/**
+ * Era I — estabelece as três regras do jogo em menos de cinco minutos:
+ * o narrador pergunta coisas, não aceita as respostas, e o progresso
+ * exibido não tem relação nenhuma com a realidade.
+ */
 export const era1: EraDefinition = {
   id: 1,
   code: "I",
@@ -16,8 +21,8 @@ export const era1: EraDefinition = {
   theme: eraThemes[1],
   achievements: [BEGIN_AGAIN],
   screens: [
-    // O mapa das 13 Eras abre o jogo: é ele que planta a ideia de que
-    // ainda faltam cinco Eras depois da folklore.
+    // O mapa abre o jogo: é ele que planta a ideia de que existem treze
+    // Eras, quatro delas ilegíveis e uma classificada.
     { kind: "progressMap", id: "mapa-inicial", cta: "COMEÇAR" },
     {
       kind: "titleCard",
@@ -33,6 +38,7 @@ export const era1: EraDefinition = {
       ],
       cta: "CONTINUAR",
     },
+    { kind: "minigame", id: "era1-nome", game: "nameChallenge" },
     {
       kind: "quiz",
       id: "era1-paciencia",
@@ -46,10 +52,11 @@ export const era1: EraDefinition = {
       anyAnswerAccepted: true,
       onCorrect: [
         { text: "Informação registrada.", pause: "short" },
-        { text: "Paciência:\nDELUXE EDITION INDISPONÍVEL", pause: "long" },
+        { text: "Vamos testar isso.", pause: "long" },
       ],
     },
-    { kind: "minigame", id: "era1-our-song", game: "wordSearch" },
+    { kind: "minigame", id: "era1-escala", game: "trustScale" },
+    { kind: "minigame", id: "era1-our-song", game: "ourSong" },
     {
       kind: "reveal",
       id: "era1-achievement",
@@ -59,11 +66,15 @@ export const era1: EraDefinition = {
     {
       kind: "eraOutro",
       id: "era1-outro",
-      progressLabel: "1 de 13",
-      lines: [
+      // Primeira mentira do contador: 8% vira 41% sem nenhum motivo.
+      progressLabel: "8%",
+      recalculatedLabel: "41%",
+      recalculatedLines: [
+        { text: "Melhor assim.", pause: "short" },
         { text: "Falta pouco.", pause: "long" },
         { text: "Isso foi mentira.", pause: "long" },
       ],
+      lines: [{ text: "Progresso registrado.", pause: "short" }],
       cta: "CONTINUAR",
     },
   ],

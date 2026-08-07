@@ -1,13 +1,20 @@
+import { projectConfig } from "@/config/project";
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
+/**
+ * Era VI — a única batida verdadeiramente emocional antes do final. O
+ * jogo levanta a pergunta ("o que vocês são?"), pede a resposta dele e
+ * então recusa mostrar a do Lucas: ACESSO NEGADO. É a isca que faz a
+ * Era XIII parecer o lugar onde tudo se resolve.
+ */
 export const era6: EraDefinition = {
   id: 6,
   code: "VI",
   title: "reputation",
   album: "reputation",
   theme: eraThemes[6],
-  achievements: [{ id: "clean", title: "CLEAN", description: "Hidratação restaurada." }],
+  achievements: [],
   screens: [
     {
       kind: "titleCard",
@@ -33,39 +40,64 @@ export const era6: EraDefinition = {
       ],
       cta: "CONTINUAR",
     },
+    { kind: "minigame", id: "era6-call-it", game: "callItWhatYouWant" },
     {
-      kind: "quiz",
-      id: "era6-descricao",
-      prompt: [{ text: "Qual destas opções\ndescreve melhor vocês?" }],
-      options: [
-        { id: "king", label: "King of My Heart." },
-        { id: "end-game", label: "End Game." },
-        { id: "delicate", label: "Delicate." },
-        { id: "todas", label: "Um pouco de todas." },
+      kind: "openQuestion",
+      id: "era6-sentimento",
+      questionId: "o-que-sente",
+      label: "PERGUNTA ABERTA",
+      prompt: [
+        { text: "Sem alternativas.", pause: "short" },
+        { text: "Sem piada.", pause: "short" },
+        { text: "O que você sente\nquando está com ele?", pause: "long" },
       ],
-      anyAnswerAccepted: true,
-      onCorrect: [
-        { text: "Resposta registrada.", pause: "short" },
-        { text: "Ainda estou processando isso.", pause: "long" },
+      echo: true,
+      submitLabel: "ENVIAR",
+      response: [
+        { text: "Recebido.", pause: "long" },
+        { text: "Guardado.", pause: "long" },
       ],
+    },
+    {
+      kind: "reveal",
+      id: "era6-resposta-lucas",
+      systemBlock: [
+        "RESPOSTA CORRESPONDENTE",
+        `Origem: ${projectConfig.playerOneName}`,
+        "Status: ARQUIVADA",
+      ],
+      lines: [
+        { text: "Ele respondeu\na mesma pergunta.", pause: "long" },
+        { text: "Quer ver?", pause: "long" },
+      ],
+      cta: "VER RESPOSTA DE LUCAS",
+    },
+    {
+      kind: "reveal",
+      id: "era6-acesso-negado",
+      systemBlock: ["ACESSO NEGADO", "", "Disponível em:", "ERA XIII"],
+      lines: [
+        { text: "Ainda não.", pause: "short" },
+        { text: "Eu avisei que existia\numa parte classificada.", pause: "long" },
+      ],
+      cta: "CONTINUAR",
     },
     {
       kind: "compatibility",
       id: "era6-compatibilidade",
       label: "RECALCULANDO",
       lines: [
-        { text: "Nem o primeiro beijo\nresolveu aquele 1%.", pause: "short" },
+        { text: "Nem essa resposta\nresolveu aquele 1%.", pause: "short" },
         {
           text: "A Era XIII\nestá se tornando\nestatisticamente suspeita.",
           pause: "long",
         },
       ],
     },
-    { kind: "minigame", id: "era6-mijao", game: "waterCup" },
     {
       kind: "eraOutro",
       id: "era6-outro",
-      progressLabel: "6 de 13",
+      progressLabel: "77%",
       lines: [
         {
           text: "Eu chamaria\nde uma situação\ncada vez mais suspeita.",
