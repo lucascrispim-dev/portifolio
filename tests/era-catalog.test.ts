@@ -21,15 +21,21 @@ describe("catálogo das 13 Eras", () => {
   });
 
   /**
-   * A direção definitiva pede mistério, não um plano legível: as Eras IX
-   * a XII são "???". Um nome real ali entregaria que existe um roteiro
-   * escrito além da Era VIII.
+   * O mapa lista os nomes reais dos álbuns seguintes — é o que faz a
+   * mentira funcionar: parece um plano completo, não um "em breve"
+   * genérico. Se algum desses nomes sumir, a Era XIII vira a única
+   * pista de que a história continua, o que é mais fraco.
    */
-  it("as Eras IX a XII são ilegíveis", () => {
+  it("as Eras IX a XII têm nomes reais de álbuns", () => {
     const names = eraCatalog
       .filter((e) => e.id >= 9 && e.id <= 12)
       .map((e) => e.title);
-    expect(names).toEqual(["???", "???", "???", "???"]);
+    expect(names).toEqual([
+      "evermore",
+      "Midnights",
+      "The Tortured Poets Department",
+      "The Life of a Showgirl",
+    ]);
   });
 
   it("a Era XIII é a única nomeada e nunca é jogável", () => {

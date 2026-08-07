@@ -20,9 +20,9 @@ import {
 import type { EraId, EraStatus, NarratorLine } from "@/types/game";
 
 /**
- * O mapa sustenta a ficção inteira: 13 Eras, as quatro últimas ocultas em
- * "???" e a XIII classificada e pulsando. É para ele acreditar que existe
- * um final guardado para outro dia.
+ * O mapa sustenta a ficção inteira: 13 Eras, as quatro últimas com os
+ * nomes reais dos álbuns seguintes e a XIII classificada e pulsando.
+ * É para ele acreditar que existe um final guardado para outro dia.
  */
 export function ProgressMap({
   eraStatuses,
