@@ -1,3 +1,4 @@
+import { projectConfig } from "@/config/project";
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
@@ -9,9 +10,17 @@ const DEBUT = {
 };
 
 /**
- * Era I — estabelece as três regras do jogo em menos de cinco minutos:
- * o narrador pergunta coisas, não aceita as respostas, e o progresso
- * exibido não tem relação nenhuma com a realidade.
+ * Era I — Debut.
+ *
+ * O sistema está **conhecendo alguém**. Essa é a personalidade da Era e
+ * ela dita tudo: ele observa, anota, tira conclusões erradas com enorme
+ * confiança e monta um perfil que nunca mais é mencionado.
+ *
+ * A Era estabelece as três regras do jogo em poucos minutos — o narrador
+ * pergunta coisas, não aceita as respostas, e o número de progresso não
+ * tem relação nenhuma com a realidade — e mais nada. Nenhuma pista do
+ * final, nenhuma menção à Era XIII: a promessa só existe a partir da
+ * Era III, quando ele se trai.
  */
 export const era1: EraDefinition = {
   id: 1,
@@ -21,8 +30,8 @@ export const era1: EraDefinition = {
   theme: eraThemes[1],
   achievements: [DEBUT],
   screens: [
-    // O mapa abre o jogo: é ele que planta a ideia de que existem treze
-    // Eras, quatro delas ilegíveis e uma classificada.
+    // O mapa abre o jogo com doze Eras e um plano de aparência completa.
+    // O décimo terceiro cartão ainda não existe aqui.
     { kind: "progressMap", id: "mapa-inicial", cta: "COMEÇAR" },
     {
       kind: "titleCard",
@@ -56,7 +65,60 @@ export const era1: EraDefinition = {
       ],
     },
     { kind: "minigame", id: "era1-escala", game: "trustScale" },
+    {
+      // Uma pergunta que só existe para o sistema poder discordar da
+      // resposta, qualquer que ela seja.
+      kind: "quiz",
+      id: "era1-expectativa",
+      prompt: [
+        { text: "Qual é a sua expectativa\npara este projeto?" },
+      ],
+      options: [
+        { id: "alta", label: "Alta." },
+        { id: "media", label: "Média." },
+        { id: "baixa", label: "Baixa." },
+        { id: "medo", label: "Estou com um pouco de medo." },
+      ],
+      anyAnswerAccepted: true,
+      onCorrect: [
+        { text: "Anotado.", pause: "short" },
+        { text: "Sua expectativa\nestá calibrada\nincorretamente.", pause: "short" },
+        { text: "Não vou dizer\npara qual lado.", pause: "long" },
+      ],
+    },
+    {
+      // O perfil montado pelo sistema. Todas as conclusões são erradas,
+      // e ele as apresenta como fato consumado.
+      kind: "reveal",
+      id: "era1-perfil",
+      systemBlock: [
+        "PERFIL PARCIAL",
+        "",
+        `Sujeito: ${projectConfig.playerTwoJokeName}`,
+        "Idade estimada: 13",
+        "Signo: irrelevante",
+        "Time: a confirmar",
+        "Filme favorito: a confirmar",
+        "Bebida favorita: leite",
+        "",
+        "Confiabilidade dos dados: 12%",
+      ],
+      lines: [
+        { text: "Montei um perfil seu.", pause: "short" },
+        { text: "Alguns campos\nestão errados.", pause: "short" },
+        { text: "Não vou corrigir\nnenhum deles.", pause: "long" },
+      ],
+      cta: "CONTINUAR",
+    },
     { kind: "minigame", id: "era1-our-song", game: "ourSong" },
+    {
+      // O primeiro item. Nada explica o inventário — ele simplesmente
+      // passa a existir, com moldura, laudo e nenhuma utilidade.
+      kind: "item",
+      id: "era1-pulseira",
+      itemId: "pulseira-taylor",
+    },
+    { kind: "file", id: "era1-arquivo", fileId: "arquivo-001" },
     {
       kind: "reveal",
       id: "era1-achievement",

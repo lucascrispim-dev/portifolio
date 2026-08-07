@@ -1,3 +1,4 @@
+import { projectConfig } from "@/config/project";
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
@@ -17,9 +18,16 @@ const TRICOLOR = {
 };
 
 /**
- * Era V — a mais longa e a mais cansativa de propósito: leite, um
- * labirinto que sempre volta ao começo e uma cobrança de pênalti que só
- * entra na terceira tentativa. É onde a paciência termina de acabar.
+ * Era V — 1989.
+ *
+ * A Era em que o sistema **se moderniza**. Ele instala uma atualização no
+ * meio do jogo, anuncia a versão 2.0 com orgulho de release note, lista as
+ * melhorias — e continua fazendo exatamente as mesmas coisas de antes,
+ * só que mais rápido e mais bonito.
+ *
+ * É a Era mais longa e a mais cansativa de propósito: leite, um labirinto
+ * que sempre volta ao começo e uma cobrança de pênalti que só entra na
+ * terceira tentativa. É onde a paciência termina de acabar.
  */
 export const era5: EraDefinition = {
   id: 5,
@@ -44,6 +52,30 @@ export const era5: EraDefinition = {
       cta: "CONTINUAR",
     },
     {
+      // As notas de versão. Toda linha é verdadeira e nenhuma é útil.
+      kind: "reveal",
+      id: "era5-changelog",
+      systemBlock: [
+        "NOTAS DA VERSÃO 2.0",
+        "",
+        "+ Interface redesenhada",
+        "+ Animações mais suaves",
+        "+ Novo sistema de partículas",
+        "+ Correção de 3 bugs",
+        "+ Introdução de 7 bugs",
+        "",
+        "- Removido: modo fácil",
+        "- Removido: botão de pular",
+        `- Removido: paciência de ${projectConfig.playerTwoJokeName}`,
+      ],
+      lines: [
+        { text: "Atualização instalada.", pause: "short" },
+        { text: "Nada mudou\nno funcionamento.", pause: "short" },
+        { text: "Mas repare\nem como está bonito.", pause: "long" },
+      ],
+      cta: "CONTINUAR",
+    },
+    {
       kind: "quiz",
       id: "era5-leite",
       prompt: [{ text: "O que Lucas gosta de fazer\nquando passa mal?" }],
@@ -60,6 +92,7 @@ export const era5: EraDefinition = {
       ],
       achievement: ESPECIALISTA,
     },
+    { kind: "item", id: "era5-leite-item", itemId: "copo-de-leite" },
     {
       kind: "quiz",
       id: "era5-leite-quantidade",
@@ -76,6 +109,7 @@ export const era5: EraDefinition = {
         { text: "E preocupante.", pause: "long" },
       ],
     },
+    { kind: "file", id: "era5-arquivo-leite", fileId: "arquivo-007" },
     { kind: "minigame", id: "era5-labirinto", game: "woodsLabyrinth" },
     {
       kind: "quiz",
@@ -102,7 +136,15 @@ export const era5: EraDefinition = {
         { text: "Não havia alternativa.", pause: "long" },
       ],
     },
+    { kind: "item", id: "era5-cachecol", itemId: "cachecol-tricolor" },
     { kind: "minigame", id: "era5-penalti", game: "penaltyShootout" },
+    {
+      // Depois de instalar a versão 2.0 com tanta pompa, o sistema
+      // descobre que o incompatível é o jogador. E segue mesmo assim.
+      kind: "interrupt",
+      id: "era5-incompativel",
+      error: "versao-incompativel",
+    },
     {
       kind: "quiz",
       id: "era5-eggs",

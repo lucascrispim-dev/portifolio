@@ -8,13 +8,14 @@ import type {
   PlayableEraId,
 } from "@/types/game";
 import { createInitialProgress } from "@/lib/storage";
+import { eraDefinitions } from "@/content/eras";
 
 export type GameAction =
   | { type: "HYDRATE"; progress: GameProgress }
   | { type: "NO_BUTTON_ATTEMPT" }
   | { type: "NO_BUTTON_DESTROYED" }
   | { type: "TERMS_ACCEPTED" }
-  | { type: "ERA_SCENE_ADVANCE"; era: PlayableEraId }
+  | { type: "ERA_SCENE_ADVANCE"; era: PlayableEraId; fromScene: number }
   | { type: "ERA_COMPLETE"; era: PlayableEraId }
   | { type: "ADD_ACHIEVEMENT"; achievementId: string }
   | { type: "ADD_EASTER_EGG"; id: string }
@@ -23,6 +24,11 @@ export type GameAction =
   | { type: "LOSE_PATIENCE"; to: number }
   | { type: "SET_FAKE_RESET_STAGE"; stage: FakeResetStage }
   | { type: "ERA_XIII_TAP" }
+  | { type: "DISCOVER_ERA_XIII" }
+  | { type: "COLLECT_ITEM"; itemId: string }
+  | { type: "UNLOCK_FILE"; fileId: string }
+  | { type: "COUNT_ANSWER" }
+  | { type: "COUNT_ERROR" }
   | { type: "SET_FINAL_STAGE"; stage: FinalStage }
   | { type: "RESET" }
   | { type: "DEV_SET_ERA"; era: PlayableEraId }
@@ -69,9 +75,33 @@ export function transition(
     case "TERMS_ACCEPTED":
       return { ...progress, termsAccepted: true, introCompleted: true };
 
+    /**
+     * Avançar exige dizer de qual cena se está saindo.
+     *
+     * Sem isso, dois toques rápidos no mesmo "CONTINUAR" avançavam duas
+     * cenas: o botão da tela que está saindo continua clicável durante a
+     * animação de saída, e o segundo toque pulava a tela seguinte inteira
+     * — um item, um arquivo ou uma pergunta simplesmente não aconteciam.
+     * O jogo inclusive provoca o jogador por clicar rápido demais, então
+     * é exatamente isso que ele vai fazer.
+     *
+     * Com a cena de origem declarada, o segundo toque chega com um número
+     * que não corresponde mais e é descartado.
+     */
     case "ERA_SCENE_ADVANCE": {
       const status = progress.eraStatuses[action.era];
       if (!isEraPlayable(status)) return progress;
+      if (progress.eraSceneIndex[action.era] !== action.fromScene) return progress;
+
+      /**
+       * E nunca passa da última cena. A interface não oferece avanço numa
+       * tela que não existe, mas o custo de errar aqui é uma tela em
+       * branco sem saída no celular de alguém, numa noite que acontece
+       * uma vez. O teto fica no estado, não na confiança.
+       */
+      const lastScene = eraDefinitions[action.era].screens.length - 1;
+      if (action.fromScene >= lastScene) return progress;
+
       return {
         ...progress,
         currentEra: action.era,
@@ -142,6 +172,38 @@ export function transition(
     case "ERA_XIII_TAP":
       return { ...progress, eraXiiiTapCount: progress.eraXiiiTapCount + 1 };
 
+    /**
+     * Descobrir a Era XIII é irreversível: o vazamento da Era III não
+     * pode ser "desvazado", nem pelo falso reset. Fingir que ele nunca
+     * aconteceu tiraria do jogador a única coisa que ele conquistou
+     * prestando atenção.
+     */
+    case "DISCOVER_ERA_XIII":
+      return progress.eraXiiiDiscovered
+        ? progress
+        : { ...progress, eraXiiiDiscovered: true };
+
+    case "COLLECT_ITEM":
+      return {
+        ...progress,
+        inventory: addUnique(progress.inventory, action.itemId),
+      };
+
+    case "UNLOCK_FILE":
+      return { ...progress, files: addUnique(progress.files, action.fileId) };
+
+    case "COUNT_ANSWER":
+      return {
+        ...progress,
+        stats: { ...progress.stats, answers: progress.stats.answers + 1 },
+      };
+
+    case "COUNT_ERROR":
+      return {
+        ...progress,
+        stats: { ...progress.stats, errors: progress.stats.errors + 1 },
+      };
+
     /** A sequência final nunca volta atrás — nem por recarregar a página. */
     case "SET_FINAL_STAGE": {
       const current = FINAL_ORDER.indexOf(progress.finalStage);
@@ -173,6 +235,10 @@ export function transition(
         eraStatuses,
         eraSceneIndex: { ...progress.eraSceneIndex, [action.era]: 0 },
         fakeResetStage: "none",
+        // O vazamento acontece na Era III: pular para depois dela precisa
+        // reproduzir um mapa que já mostra a Era XIII, senão o ensaio não
+        // corresponde ao que o jogador vai ver.
+        eraXiiiDiscovered: action.era > 3,
         finalStage: "playing",
       };
     }

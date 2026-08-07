@@ -11,7 +11,11 @@ function playEra(progress: GameProgress, era: PlayableEraId): GameProgress {
   const total = eraDefinitions[era].screens.length;
   let next = progress;
   for (let i = 0; i < total; i++) {
-    next = transition(next, { type: "ERA_SCENE_ADVANCE", era });
+    next = transition(next, {
+      type: "ERA_SCENE_ADVANCE",
+      era,
+      fromScene: next.eraSceneIndex[era],
+    });
   }
   return transition(next, { type: "ERA_COMPLETE", era });
 }
@@ -55,9 +59,62 @@ describe("progressão contínua", () => {
     }
   });
 
+  /**
+   * O jogo provoca o jogador por clicar rápido demais, então ele vai
+   * clicar rápido demais. Enquanto uma tela sai, o botão dela continua
+   * clicável por alguns quadros — sem esta proteção, o segundo toque
+   * avançava outra cena e o jogador perdia um item, um arquivo ou uma
+   * pergunta inteira sem nunca ver a tela.
+   */
+  it("dois toques no mesmo botão avançam uma cena só", () => {
+    let progress = createInitialProgress();
+    progress = transition(progress, {
+      type: "ERA_SCENE_ADVANCE",
+      era: 1,
+      fromScene: 0,
+    });
+    expect(progress.eraSceneIndex[1]).toBe(1);
+
+    // O toque repetido chega declarando a cena antiga.
+    const repeated = transition(progress, {
+      type: "ERA_SCENE_ADVANCE",
+      era: 1,
+      fromScene: 0,
+    });
+    expect(repeated).toBe(progress);
+    expect(repeated.eraSceneIndex[1]).toBe(1);
+  });
+
+  it("nenhuma Era passa da última cena com toques repetidos", () => {
+    for (const era of PLAYABLE_ERA_IDS) {
+      let progress = createInitialProgress();
+      progress = transition(progress, { type: "DEV_SET_ERA", era });
+
+      const last = eraDefinitions[era].screens.length - 1;
+      // Muito mais toques que telas, cada um repetido, como um jogador
+      // impaciente faria.
+      for (let i = 0; i < eraDefinitions[era].screens.length * 3; i++) {
+        const from = progress.eraSceneIndex[era];
+        progress = transition(progress, {
+          type: "ERA_SCENE_ADVANCE",
+          era,
+          fromScene: from,
+        });
+        progress = transition(progress, {
+          type: "ERA_SCENE_ADVANCE",
+          era,
+          fromScene: from,
+        });
+      }
+      expect(progress.eraSceneIndex[era]).toBe(last);
+    }
+  });
+
   it("ignora avanço de cena de uma Era trancada", () => {
     const progress = createInitialProgress();
-    expect(transition(progress, { type: "ERA_SCENE_ADVANCE", era: 5 })).toEqual(
+    expect(
+      transition(progress, { type: "ERA_SCENE_ADVANCE", era: 5, fromScene: 0 })
+    ).toEqual(
       progress
     );
   });

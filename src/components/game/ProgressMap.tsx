@@ -11,6 +11,8 @@ import { projectConfig } from "@/config/project";
 import {
   ERA_XIII_SECRET_TAP,
   eraCatalog,
+  eraCountLabel,
+  eraThirteenAppearedNote,
   eraThirteenCard,
   eraThirteenSecretAchievement,
   eraThirteenSecretResponse,
@@ -20,13 +22,21 @@ import {
 import type { EraId, EraStatus, NarratorLine } from "@/types/game";
 
 /**
- * O mapa sustenta a ficção inteira: 13 Eras, as quatro últimas com os
- * nomes reais dos álbuns seguintes e a XIII classificada e pulsando.
- * É para ele acreditar que existe um final guardado para outro dia.
+ * O mapa sustenta a ficção inteira.
+ *
+ * Na primeira metade do jogo ele mostra doze Eras e mais nada — um plano
+ * grande, legível e aparentemente completo. O décimo terceiro cartão só
+ * aparece depois que o narrador se trai na Era III, e quando aparece não
+ * vem com explicação: só um bloco classificado, pulsando, no fim de uma
+ * lista que até então parecia inteira.
+ *
+ * É essa ordem que faz a Era XIII valer alguma coisa. Ela não é
+ * apresentada ao jogador; ela é encontrada por ele.
  */
 export function ProgressMap({
   eraStatuses,
   eraXiiiTapCount,
+  eraXiiiDiscovered,
   onEraXiiiTap,
   onAchievement,
   onContinue,
@@ -34,6 +44,8 @@ export function ProgressMap({
 }: {
   eraStatuses: Record<EraId, EraStatus>;
   eraXiiiTapCount: number;
+  /** Antes do vazamento da Era III, a Era XIII não existe neste mapa. */
+  eraXiiiDiscovered: boolean;
   onEraXiiiTap: () => void;
   onAchievement: (id: string) => void;
   onContinue: () => void;
@@ -75,6 +87,9 @@ export function ProgressMap({
         <p className="font-mono text-xs tracking-[0.25em] opacity-70">
           {projectConfig.projectName}
         </p>
+        <p className="font-mono text-[10px] tracking-[0.2em] opacity-45">
+          {eraCountLabel(eraXiiiDiscovered)}
+        </p>
       </div>
 
       <ul className="flex flex-col">
@@ -115,45 +130,59 @@ export function ProgressMap({
         })}
       </ul>
 
-      {/* A Era XIII pulsa discretamente: é a isca da experiência inteira. */}
-      <motion.button
-        type="button"
-        onClick={handleEraXiiiTap}
-        aria-label="Era 13 — THE NEXT ERA (classificado)"
-        initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-        animate={
-          reducedMotion
-            ? { opacity: 1, y: 0 }
-            : { opacity: [0.75, 1, 0.75], y: 0 }
-        }
-        transition={
-          reducedMotion
-            ? { duration: 0.3 }
-            : { opacity: { duration: 3.2, repeat: Infinity }, y: { duration: 0.4 } }
-        }
-        className="flex flex-col gap-2 border p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{
-          borderRadius: theme.radius,
-          borderColor: `${theme.accent}80`,
-          backgroundColor: `${theme.foreground}12`,
-        }}
-      >
-        <span
-          className="font-mono text-xs tracking-[0.3em]"
-          style={{ color: theme.accent }}
-        >
-          {eraThirteenCard.eraLabel}
-        </span>
-        <span
-          className="text-2xl"
-          style={{ fontFamily: theme.titleFontFamily, color: theme.foreground }}
-        >
-          {eraThirteenCard.title}
-        </span>
-        <span className="font-mono text-[11px] tracking-[0.2em] opacity-60">
-          STATUS: {eraThirteenCard.status}
-        </span>
-      </motion.button>
+      {/*
+        A Era XIII pulsa discretamente: é a isca da experiência inteira.
+        Só existe depois do vazamento — antes disso o mapa termina na XII
+        e não há nada aqui para o jogador desconfiar.
+      */}
+      {eraXiiiDiscovered ? (
+        <>
+          <p
+            className="whitespace-pre-line font-mono text-[9px] leading-relaxed tracking-[0.2em] opacity-40"
+            style={{ color: theme.accent }}
+          >
+            {eraThirteenAppearedNote}
+          </p>
+          <motion.button
+            type="button"
+            onClick={handleEraXiiiTap}
+            aria-label="Era 13 — THE NEXT ERA (classificado)"
+            initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+            animate={
+              reducedMotion
+                ? { opacity: 1, y: 0 }
+                : { opacity: [0.75, 1, 0.75], y: 0 }
+            }
+            transition={
+              reducedMotion
+                ? { duration: 0.3 }
+                : { opacity: { duration: 3.2, repeat: Infinity }, y: { duration: 0.4 } }
+            }
+            className="flex flex-col gap-2 border p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{
+              borderRadius: theme.radius,
+              borderColor: `${theme.accent}80`,
+              backgroundColor: `${theme.foreground}12`,
+            }}
+          >
+            <span
+              className="font-mono text-xs tracking-[0.3em]"
+              style={{ color: theme.accent }}
+            >
+              {eraThirteenCard.eraLabel}
+            </span>
+            <span
+              className="text-2xl"
+              style={{ fontFamily: theme.titleFontFamily, color: theme.foreground }}
+            >
+              {eraThirteenCard.title}
+            </span>
+            <span className="font-mono text-[11px] tracking-[0.2em] opacity-60">
+              STATUS: {eraThirteenCard.status}
+            </span>
+          </motion.button>
+        </>
+      ) : null}
 
       <div className="mt-auto pt-2">
         <ChoiceButton onClick={onContinue}>{cta}</ChoiceButton>

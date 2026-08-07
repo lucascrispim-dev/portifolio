@@ -62,7 +62,10 @@ export const termsItems: string[] = [
   "Não pressionará o desenvolvedor.",
   "Aceita que Taylor Swift melhora qualquer situação.",
   "Aceita a presença de bugs emocionais.",
-  "Não tentará acessar a Era XIII antes da hora.",
+  // Antigamente esta linha citava a Era XIII. Citá-la aqui entregava, na
+  // primeira tela, a única coisa que o jogo tem para o jogador descobrir
+  // sozinho — agora ela só existe depois do vazamento da Era III.
+  "Não tentará acessar partes classificadas deste projeto.",
   `Aceita ser chamado de ${projectConfig.playerTwoJokeName}.`,
   "Aceita que o desenvolvedor é dramático.",
   "Concorda que qualquer reclamação poderá resultar em mais perguntas.",

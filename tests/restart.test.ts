@@ -12,7 +12,11 @@ function progressoNoFinal(): GameProgress {
   for (const era of PLAYABLE_ERA_IDS) {
     const total = 3;
     for (let i = 0; i < total; i++) {
-      progress = transition(progress, { type: "ERA_SCENE_ADVANCE", era });
+      progress = transition(progress, {
+        type: "ERA_SCENE_ADVANCE",
+        era,
+        fromScene: progress.eraSceneIndex[era],
+      });
     }
     progress = transition(progress, { type: "ERA_COMPLETE", era });
   }

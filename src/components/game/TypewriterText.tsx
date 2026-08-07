@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTypeSpeed } from "@/components/game/EraPersonalityProvider";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type TypewriterTextProps = {
@@ -12,16 +13,25 @@ type TypewriterTextProps = {
   showCursor?: boolean;
 };
 
-/** Revela `text` caractere a caractere. Respeita prefers-reduced-motion. */
+/**
+ * Revela `text` caractere a caractere. Respeita prefers-reduced-motion.
+ *
+ * Sem `speedMs` explícito, a velocidade vem da personalidade da Era
+ * atual: o narrador atropela as frases em Fearless e quase para em
+ * folklore. Fora do jogo (introdução, sequência final) não há Era, e o
+ * contexto entrega o ritmo padrão.
+ */
 export function TypewriterText({
   text,
-  speedMs = 22,
+  speedMs,
   instant = false,
   onDone,
   className,
   showCursor = true,
 }: TypewriterTextProps) {
   const reducedMotion = useReducedMotion();
+  const eraSpeedMs = useTypeSpeed();
+  const effectiveSpeedMs = speedMs ?? eraSpeedMs;
   const skip = instant || reducedMotion;
   const [visibleChars, setVisibleChars] = useState(() => (skip ? text.length : 0));
   const onDoneRef = useRef(onDone);
@@ -44,10 +54,10 @@ export function TypewriterText({
         clearInterval(interval);
         onDoneRef.current?.();
       }
-    }, speedMs);
+    }, effectiveSpeedMs);
 
     return () => clearInterval(interval);
-  }, [text, speedMs, skip]);
+  }, [text, effectiveSpeedMs, skip]);
 
   const done = visibleChars >= text.length;
 

@@ -1,12 +1,24 @@
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
+const PEACE = { id: "peace", title: "PEACE" };
+
 /**
- * A Era VIII precisa parecer uma etapa de organização e análise — nunca
- * um encerramento. O jogador deve sair dela acreditando que o jogo será
- * apenas pausado até as Eras IX a XIII existirem. O fio de invisible
- * string termina apontando explicitamente para a Era XIII: é a última e
- * mais forte pista falsa.
+ * Era VIII — folklore.
+ *
+ * O sistema **fica quieto**. As notificações rareiam, o narrador digita
+ * quase parando e o jogo passa a parecer que está acabando. A Era
+ * inteira é construída para essa impressão: ela precisa parecer uma
+ * etapa de organização e arquivamento — nunca um encerramento — e o
+ * jogador deve sair dela acreditando que o jogo será apenas pausado até
+ * as Eras IX a XIII existirem.
+ *
+ * O teste de imobilidade é o coração da Era e o único minijogo do projeto
+ * em que a mecânica é não fazer nada. Depois de trinta minutos exigindo
+ * reação, o sistema pede o contrário — e não provoca uma única vez.
+ *
+ * O fio de invisible string termina apontando explicitamente para a Era
+ * XIII: é a última e mais forte pista falsa.
  */
 export const era8: EraDefinition = {
   id: 8,
@@ -14,7 +26,7 @@ export const era8: EraDefinition = {
   title: "folklore",
   album: "folklore",
   theme: eraThemes[8],
-  achievements: [{ id: "invisible-string", title: "INVISIBLE STRING" }],
+  achievements: [{ id: "invisible-string", title: "INVISIBLE STRING" }, PEACE],
   screens: [
     {
       kind: "titleCard",
@@ -60,6 +72,13 @@ export const era8: EraDefinition = {
       onCorrect: [{ text: "Anotado para o final.", pause: "long" }],
     },
     { kind: "minigame", id: "era8-fio", game: "invisibleString" },
+    // Treze segundos de silêncio. É a última coisa que o jogo pede antes
+    // de virar outra coisa.
+    { kind: "minigame", id: "era8-imobilidade", game: "stillnessTest" },
+    // Uma última olhada no mapa: oito Eras concluídas, quatro esperando,
+    // e a décima terceira ali, classificada, exatamente como ficou desde
+    // que apareceu sozinha na Era III.
+    { kind: "progressMap", id: "era8-mapa", cta: "CONTINUAR" },
     {
       kind: "quiz",
       id: "era8-espera",

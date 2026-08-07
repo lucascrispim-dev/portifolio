@@ -82,6 +82,27 @@ export const afterYesLines: NarratorLine[] = [
   { text: "Era uma resposta.", pause: "long" },
 ];
 
+/**
+ * O inventário finalmente explicado.
+ *
+ * O jogo inteiro entregou objetos com laudo técnico e nenhuma utilidade,
+ * e recusou responder para que serviam — inclusive no menu, onde a
+ * pergunta fica escrita ("Utilidade: a ser determinada."). Esta é a
+ * única resposta que existe, e ela só aparece depois do "sim".
+ */
+export const inventoryRevealHeader = "INVENTÁRIO — ANÁLISE FINAL";
+
+export const inventoryRevealLines: NarratorLine[] = [
+  { text: "Você juntou isso tudo\nsem perguntar\npara que servia.", pause: "long" },
+  { text: "Nenhum item\ntinha função.", pause: "short" },
+  { text: "Nenhum item\ntem função agora.", pause: "long" },
+  {
+    text: "É só a nossa história,\nem ordem,\nem forma de coisas\nque não valem nada.",
+    pause: "long",
+  },
+  { text: "Era esse\no sistema de inventário.", pause: "long" },
+];
+
 export const closingLines: NarratorLine[] = [
   { text: "Call It What You Want.", pause: "long" },
   { text: "Eu já sei\ncomo quero chamar.", pause: "long" },

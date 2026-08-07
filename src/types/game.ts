@@ -92,6 +92,65 @@ export type EraCatalogEntry = {
   playable: boolean;
 };
 
+/**
+ * Identificadores dos sistemas paralelos. Ficam como `string` no estado
+ * salvo (é o que sobrevive a um JSON), mas os catálogos em
+ * `src/content/` são a fonte de verdade do que cada id significa.
+ */
+export type InventoryItem = {
+  id: string;
+  name: string;
+  /** Desenho do item. Sem emoji: o roteiro só permite 🏆 e 🖕. */
+  glyph: InventoryGlyph;
+  /** A descrição inútil que o sistema dá. Nunca explica nada. */
+  note: string;
+  /** Fala curta do narrador no momento em que o item aparece. */
+  foundLine: string;
+};
+
+export type InventoryGlyph =
+  | "bracelet"
+  | "remote"
+  | "leaf"
+  | "pizza"
+  | "stone"
+  | "map"
+  | "milk"
+  | "scarf"
+  | "clipping"
+  | "ring"
+  | "string";
+
+export type SecretFile = {
+  id: string;
+  /** "ARQUIVO 004" — a numeração pula de propósito. */
+  code: string;
+  name: string;
+  /** Corpo do arquivo. Cada linha entra como bloco monoespaçado. */
+  body: string[];
+  /** Comentário do narrador ao abrir. */
+  comment?: NarratorLine[];
+};
+
+export type SystemErrorId =
+  | "erro-08"
+  | "erro-22"
+  | "dados-corrompidos"
+  | "reconectando"
+  | "versao-incompativel"
+  | "tentando-restaurar";
+
+export type SystemErrorSpec = {
+  id: SystemErrorId;
+  /** Título em caixa alta, como o sistema o exibe. */
+  code: string;
+  detail: string[];
+  /** O que o sistema diz quando "resolve" o problema. */
+  resolution: string;
+  /** Falas do narrador depois que passa. */
+  after: NarratorLine[];
+};
+
 export type EraScreen =
   | { kind: "lines"; id: string; lines: NarratorLine[]; cta: string }
   | {
@@ -147,6 +206,28 @@ export type EraScreen =
     }
   | { kind: "minigame"; id: string; game: MinigameKind; cta?: string }
   | { kind: "progressMap"; id: string; cta: string }
+  /**
+   * O vazamento da Era III. O narrador diz o que não devia, se censura
+   * tarde demais, e é assim — e só assim — que a Era XIII entra na
+   * história.
+   */
+  | { kind: "leak"; id: string; cta?: string }
+  /** Entrega um item do inventário. O sistema nunca diz para que serve. */
+  | { kind: "item"; id: string; itemId: string; cta?: string }
+  /** Libera um arquivo secreto e deixa o jogador ler. */
+  | { kind: "file"; id: string; fileId: string; cta?: string }
+  /**
+   * Um "defeito" roteirizado: o sistema trava, se recupera sozinho e faz
+   * piada. Nada aqui é aleatório — todo erro do jogo é planejado.
+   */
+  | {
+      kind: "interrupt";
+      id: string;
+      error: SystemErrorId;
+      /** Falas extras depois da recuperação, além das do próprio erro. */
+      lines?: NarratorLine[];
+      cta?: string;
+    }
   | {
       kind: "eraOutro";
       id: string;
@@ -176,7 +257,11 @@ export type MinigameKind =
   | "penaltyShootout"
   | "callItWhatYouWant"
   | "paperRings"
-  | "invisibleString";
+  | "invisibleString"
+  | "clawMachine"
+  | "drivingTest"
+  | "reputationTrial"
+  | "stillnessTest";
 
 export type EraDefinition = {
   id: PlayableEraId;
@@ -188,8 +273,20 @@ export type EraDefinition = {
   achievements: Achievement[];
 };
 
+/**
+ * Contadores que alimentam o painel de ESTATÍSTICAS. Só entram aqui os
+ * números que precisam sobreviver a um reload — os de sessão (toques,
+ * tempo aberto) vivem em memória, em `useSessionStats`.
+ */
+export type GameStats = {
+  /** Perguntas efetivamente respondidas, de qualquer tipo. */
+  answers: number;
+  /** Quantas vezes o sistema "quebrou" na frente dele. */
+  errors: number;
+};
+
 export type GameProgress = {
-  schemaVersion: 3;
+  schemaVersion: 4;
   introCompleted: boolean;
   noButtonAttempts: number;
   noButtonDestroyed: boolean;
@@ -208,5 +305,16 @@ export type GameProgress = {
   fakeResetStage: FakeResetStage;
   /** Quantas vezes tentou abrir a Era XIII — escolhe a mensagem irônica. */
   eraXiiiTapCount: number;
+  /**
+   * A Era XIII não aparece no mapa desde o começo. Ela é descoberta por
+   * um vazamento do narrador na Era III — antes disso o jogo só admite
+   * doze Eras, e o mapa não tem o cartão classificado.
+   */
+  eraXiiiDiscovered: boolean;
+  /** Itens coletados, na ordem em que apareceram. */
+  inventory: string[];
+  /** Arquivos secretos já localizados. */
+  files: string[];
+  stats: GameStats;
   finalStage: FinalStage;
 };

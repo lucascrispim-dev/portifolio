@@ -11,15 +11,15 @@ import { ConfessionSequence } from "@/components/game/ConfessionSequence";
 import { EraIntro } from "@/components/game/EraIntro";
 import { EraMicroEggs } from "@/components/game/EraMicroEggs";
 import { EraOutro } from "@/components/game/EraOutro";
+import { EraPersonalityProvider } from "@/components/game/EraPersonalityProvider";
 import { EraThemeProvider } from "@/components/game/EraThemeProvider";
 import { EraThirteenSequence } from "@/components/game/EraThirteenSequence";
 import { Erro13Sequence } from "@/components/game/Erro13Sequence";
 import { FakeResetFlow } from "@/components/game/FakeResetFlow";
-import {
-  EasterEggToast,
-  useGlobalEasterEggs,
-} from "@/components/game/GlobalEasterEggs";
+import { FileFound } from "@/components/game/FileFound";
+import { useGlobalEasterEggs } from "@/components/game/GlobalEasterEggs";
 import { IntroFlow } from "@/components/game/IntroFlow";
+import { ItemFound } from "@/components/game/ItemFound";
 import { LookAtHimScreen } from "@/components/game/LookAtHimScreen";
 import { MenuDrawer } from "@/components/game/MenuDrawer";
 import { NarratorText } from "@/components/game/NarratorText";
@@ -27,20 +27,29 @@ import { OpenQuestion } from "@/components/game/OpenQuestion";
 import { ProgressMap } from "@/components/game/ProgressMap";
 import { QuizCard } from "@/components/game/QuizCard";
 import { SaveAndEndScreen } from "@/components/game/SaveAndEndScreen";
+import { SpeakNowLeak } from "@/components/game/SpeakNowLeak";
 import { SystemBlock } from "@/components/game/SystemBlock";
+import { SystemInterrupt } from "@/components/game/SystemInterrupt";
+import { NotificationProvider } from "@/components/game/SystemNotifications";
 import { BathroomMaze } from "@/components/game/minigames/BathroomMaze";
 import { CallItWhatYouWant } from "@/components/game/minigames/CallItWhatYouWant";
+import { ClawMachine } from "@/components/game/minigames/ClawMachine";
+import { DrivingTest } from "@/components/game/minigames/DrivingTest";
 import { EnchantedStars } from "@/components/game/minigames/EnchantedStars";
 import { HandToLucas } from "@/components/game/minigames/HandToLucas";
 import { InvisibleString } from "@/components/game/minigames/InvisibleString";
 import { NameChallenge } from "@/components/game/minigames/NameChallenge";
 import { PaperRingsChaos } from "@/components/game/minigames/PaperRingsChaos";
 import { PenaltyShootout } from "@/components/game/minigames/PenaltyShootout";
+import { ReputationTrial } from "@/components/game/minigames/ReputationTrial";
+import { StillnessTest } from "@/components/game/minigames/StillnessTest";
 import { TrustScale } from "@/components/game/minigames/TrustScale";
 import { WoodsLabyrinth } from "@/components/game/minigames/WoodsLabyrinth";
 import { LoveStory, OurSong } from "@/components/game/minigames/WordGames";
+import { eraPersonalities } from "@/config/personalities";
 import { eraDefinitions } from "@/content/eras";
 import { introTheme } from "@/config/themes";
+import { useSessionStats } from "@/hooks/useSessionStats";
 import { nextPatienceValue } from "@/lib/patience";
 import type { GameAction } from "@/lib/game-machine";
 import type {
@@ -51,6 +60,14 @@ import type {
   NarratorLine,
 } from "@/types/game";
 
+/**
+ * O shell do jogo.
+ *
+ * A ordem de aninhamento importa: as notificações ficam **por fora** de
+ * tudo, porque precisam sobreviver a trocas de Era, ao falso reset e à
+ * sequência final; a personalidade da Era fica por dentro do tema, porque
+ * ela só existe enquanto uma Era estiver sendo jogada.
+ */
 export function GameScreen({
   progress,
   dispatch,
@@ -58,22 +75,39 @@ export function GameScreen({
   progress: GameProgress;
   dispatch: (action: GameAction) => void;
 }) {
-  const { toast, registerLogoTap, registerClick, registerDeadTap } =
-    useGlobalEasterEggs({
-      achievements: progress.achievements,
-      easterEggs: progress.easterEggs,
-      onEgg: (event) => {
-        dispatch({ type: "ADD_EASTER_EGG", id: event.easterEggId });
-        if (event.achievementId) {
-          dispatch({ type: "ADD_ACHIEVEMENT", achievementId: event.achievementId });
-        }
-      },
-    });
+  return (
+    <NotificationProvider>
+      <GameSurface progress={progress} dispatch={dispatch} />
+    </NotificationProvider>
+  );
+}
+
+function GameSurface({
+  progress,
+  dispatch,
+}: {
+  progress: GameProgress;
+  dispatch: (action: GameAction) => void;
+}) {
+  const { registerTap, snapshot, setWatching } = useSessionStats();
+  const { registerLogoTap, registerClick, registerDeadTap } = useGlobalEasterEggs({
+    achievements: progress.achievements,
+    easterEggs: progress.easterEggs,
+    onEgg: (event) => {
+      dispatch({ type: "ADD_EASTER_EGG", id: event.easterEggId });
+      if (event.achievementId) {
+        dispatch({ type: "ADD_ACHIEVEMENT", achievementId: event.achievementId });
+      }
+    },
+  });
 
   const addAchievement = (id: string) =>
     dispatch({ type: "ADD_ACHIEVEMENT", achievementId: id });
   const losePatience = () =>
     dispatch({ type: "LOSE_PATIENCE", to: nextPatienceValue(progress.patience) });
+  const collectItem = (itemId: string) =>
+    dispatch({ type: "COLLECT_ITEM", itemId });
+  const unlockFile = (fileId: string) => dispatch({ type: "UNLOCK_FILE", fileId });
 
   // --- Sequência final: cada etapa é irreversível, nunca volta ao jogo. ---
   if (progress.finalStage !== "playing") {
@@ -112,7 +146,6 @@ export function GameScreen({
     return (
       <AppShell>
         <EraThemeProvider theme={introTheme}>
-          <EasterEggToast message={toast} />
           <IntroFlow progress={progress} dispatch={dispatch} />
         </EraThemeProvider>
       </AppShell>
@@ -123,7 +156,10 @@ export function GameScreen({
   const sceneIndex = progress.eraSceneIndex[progress.currentEra];
   const screen = era.screens[sceneIndex];
 
-  const advance = () => dispatch({ type: "ERA_SCENE_ADVANCE", era: era.id });
+  // `fromScene` faz o avanço ser idempotente: um segundo toque no botão
+  // que ainda está saindo da tela chega com a cena errada e é ignorado.
+  const advance = () =>
+    dispatch({ type: "ERA_SCENE_ADVANCE", era: era.id, fromScene: sceneIndex });
   const completeEra = () => dispatch({ type: "ERA_COMPLETE", era: era.id });
 
   /**
@@ -148,44 +184,55 @@ export function GameScreen({
   return (
     <AppShell>
       <EraThemeProvider theme={era.theme}>
-        <div onClickCapture={registerClick} className="flex flex-1 flex-col">
-          <MenuDrawer
-            patience={progress.patience}
-            patienceBroken={progress.fakeResetStage === "revealed"}
-            onOpenCountChange={registerDeadTap}
-            onLogoTap={registerLogoTap}
-          />
-          <EasterEggToast message={toast} />
-          <EraMicroEggs
-            eraId={era.id}
-            foundEggs={progress.easterEggs}
-            onAchievement={addAchievement}
-            onEasterEgg={(id) => dispatch({ type: "ADD_EASTER_EGG", id })}
-          />
+        <EraPersonalityProvider eraId={era.id}>
+          <div
+            onClickCapture={() => {
+              registerClick();
+              registerTap();
+            }}
+            className="flex flex-1 flex-col"
+          >
+            <MenuDrawer
+              progress={progress}
+              sessionStats={snapshot}
+              systemLabel={eraPersonalities[era.id].systemLabel}
+              onOpenCountChange={registerDeadTap}
+              onLogoTap={registerLogoTap}
+              onWatchingChange={setWatching}
+            />
+            <EraMicroEggs
+              eraId={era.id}
+              foundEggs={progress.easterEggs}
+              onAchievement={addAchievement}
+              onEasterEgg={(id) => dispatch({ type: "ADD_EASTER_EGG", id })}
+            />
 
-          <div className="flex flex-1 flex-col px-6 pb-10 pt-2">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`${era.id}-${sceneIndex}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-1 flex-col"
-              >
-                <ScreenRenderer
-                  screen={screen}
-                  progress={progress}
-                  dispatch={dispatch}
-                  onAdvance={advance}
-                  onCompleteEra={completeEra}
-                  onDeadTap={registerDeadTap}
-                  onPatienceDrop={losePatience}
-                />
-              </motion.div>
-            </AnimatePresence>
+            <div className="flex flex-1 flex-col px-6 pb-10 pt-2">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${era.id}-${sceneIndex}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-1 flex-col"
+                >
+                  <ScreenRenderer
+                    screen={screen}
+                    progress={progress}
+                    dispatch={dispatch}
+                    onAdvance={advance}
+                    onCompleteEra={completeEra}
+                    onDeadTap={registerDeadTap}
+                    onPatienceDrop={losePatience}
+                    onCollectItem={collectItem}
+                    onUnlockFile={unlockFile}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
+        </EraPersonalityProvider>
       </EraThemeProvider>
     </AppShell>
   );
@@ -237,6 +284,7 @@ function FinalStageRenderer({
     case "answered":
       return (
         <AfterYesSequence
+          inventory={progress.inventory}
           onAchievement={onAchievement}
           onRestart={() => dispatch({ type: "RESET" })}
         />
@@ -255,6 +303,8 @@ function ScreenRenderer({
   onCompleteEra,
   onDeadTap,
   onPatienceDrop,
+  onCollectItem,
+  onUnlockFile,
 }: {
   screen: EraScreen | undefined;
   progress: GameProgress;
@@ -263,11 +313,14 @@ function ScreenRenderer({
   onCompleteEra: () => void;
   onDeadTap: () => void;
   onPatienceDrop: () => void;
+  onCollectItem: (itemId: string) => void;
+  onUnlockFile: (fileId: string) => void;
 }) {
   if (!screen) return null;
 
   const addAchievement = (id: string) =>
     dispatch({ type: "ADD_ACHIEVEMENT", achievementId: id });
+  const countAnswer = () => dispatch({ type: "COUNT_ANSWER" });
 
   switch (screen.kind) {
     case "titleCard":
@@ -282,6 +335,7 @@ function ScreenRenderer({
           screen={screen}
           onResolved={(achievementId) => {
             if (achievementId) addAchievement(achievementId);
+            countAnswer();
             onAdvance();
           }}
         />
@@ -291,9 +345,10 @@ function ScreenRenderer({
       return (
         <OpenQuestion
           screen={screen}
-          onAnswer={(questionId, text) =>
-            dispatch({ type: "SET_OPEN_ANSWER", questionId, text })
-          }
+          onAnswer={(questionId, text) => {
+            dispatch({ type: "SET_OPEN_ANSWER", questionId, text });
+            countAnswer();
+          }}
           onContinue={onAdvance}
         />
       );
@@ -322,6 +377,46 @@ function ScreenRenderer({
         />
       );
 
+    case "leak":
+      return (
+        <SpeakNowLeak
+          onDiscover={() => dispatch({ type: "DISCOVER_ERA_XIII" })}
+          onDone={onAdvance}
+          cta={screen.cta}
+        />
+      );
+
+    case "item":
+      return (
+        <ItemFound
+          itemId={screen.itemId}
+          onCollect={onCollectItem}
+          onContinue={onAdvance}
+          cta={screen.cta}
+        />
+      );
+
+    case "file":
+      return (
+        <FileFound
+          fileId={screen.fileId}
+          onUnlock={onUnlockFile}
+          onContinue={onAdvance}
+          cta={screen.cta}
+        />
+      );
+
+    case "interrupt":
+      return (
+        <SystemInterrupt
+          error={screen.error}
+          extraLines={screen.lines}
+          onSeen={() => dispatch({ type: "COUNT_ERROR" })}
+          onContinue={onAdvance}
+          cta={screen.cta}
+        />
+      );
+
     case "minigame":
       return (
         <MinigameScreen
@@ -329,6 +424,7 @@ function ScreenRenderer({
           dispatch={dispatch}
           onAchievement={addAchievement}
           onPatienceDrop={onPatienceDrop}
+          onCollectItem={onCollectItem}
           onDone={onAdvance}
         />
       );
@@ -338,6 +434,7 @@ function ScreenRenderer({
         <ProgressMap
           eraStatuses={progress.eraStatuses}
           eraXiiiTapCount={progress.eraXiiiTapCount}
+          eraXiiiDiscovered={progress.eraXiiiDiscovered}
           onEraXiiiTap={() => dispatch({ type: "ERA_XIII_TAP" })}
           onAchievement={addAchievement}
           onContinue={onAdvance}
@@ -378,12 +475,14 @@ function MinigameScreen({
   dispatch,
   onAchievement,
   onPatienceDrop,
+  onCollectItem,
   onDone,
 }: {
   game: MinigameKind;
   dispatch: (action: GameAction) => void;
   onAchievement: (id: string) => void;
   onPatienceDrop: () => void;
+  onCollectItem: (itemId: string) => void;
   onDone: () => void;
 }) {
   switch (game) {
@@ -451,6 +550,38 @@ function MinigameScreen({
           onDone={onDone}
           onAchievement={onAchievement}
           onTheOne={() => dispatch({ type: "ADD_EASTER_EGG", id: "the-1" })}
+        />
+      );
+    case "clawMachine":
+      return (
+        <ClawMachine
+          onDone={onDone}
+          onCollect={onCollectItem}
+          onPatienceDrop={onPatienceDrop}
+        />
+      );
+    case "drivingTest":
+      return (
+        <DrivingTest
+          onDone={onDone}
+          onAchievement={onAchievement}
+          onPatienceDrop={onPatienceDrop}
+        />
+      );
+    case "reputationTrial":
+      return (
+        <ReputationTrial
+          onDone={onDone}
+          onAchievement={onAchievement}
+          onCollect={onCollectItem}
+        />
+      );
+    case "stillnessTest":
+      return (
+        <StillnessTest
+          onDone={onDone}
+          onAchievement={onAchievement}
+          onCollect={onCollectItem}
         />
       );
     default:

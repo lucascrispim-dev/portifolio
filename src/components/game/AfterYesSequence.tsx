@@ -4,12 +4,19 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AchievementCard } from "@/components/game/AchievementCard";
 import { ConfettiExplosion } from "@/components/game/ConfettiExplosion";
+import { InventoryGlyph } from "@/components/game/InventoryGlyph";
 import { NarratorText } from "@/components/game/NarratorText";
 import { useLongPress } from "@/hooks/useLongPress";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { projectConfig } from "@/config/project";
 import { pace } from "@/lib/pacing";
-import { afterYesLines, closingLines } from "@/content/final-script";
+import {
+  afterYesLines,
+  closingLines,
+  inventoryRevealHeader,
+  inventoryRevealLines,
+} from "@/content/final-script";
+import { getInventoryItem } from "@/content/inventory";
 import type { Achievement } from "@/types/game";
 
 const THE_NEXT_ERA: Achievement = {
@@ -25,6 +32,7 @@ type Step =
   | "yes"
   | "compatibility"
   | "theOne"
+  | "inventory"
   | "eraCard"
   | "closing"
   | "namorados";
@@ -35,6 +43,7 @@ const DURATIONS: Record<Step, number> = {
   yes: 3400,
   compatibility: 3600,
   theOne: 0,
+  inventory: 0,
   eraCard: 6000,
   closing: 0,
   namorados: 0,
@@ -63,9 +72,12 @@ const CONFETTI_ORIGINS = [
  * chega em 100% pela primeira e única vez.
  */
 export function AfterYesSequence({
+  inventory,
   onAchievement,
   onRestart,
 }: {
+  /** Os itens que ele juntou sem saber por quê. */
+  inventory: string[];
   onAchievement: (id: string) => void;
   /** Recomeço do zero, só depois que a última tela chegou. */
   onRestart: () => void;
@@ -112,8 +124,15 @@ export function AfterYesSequence({
       {step === "theOne" ? (
         <NarratorText
           lines={afterYesLines}
-          onDone={() => setStep("eraCard")}
+          onDone={() => setStep(inventory.length > 0 ? "inventory" : "eraCard")}
           lineClassName="whitespace-pre-line text-[18px] leading-relaxed"
+        />
+      ) : null}
+
+      {step === "inventory" ? (
+        <InventoryReveal
+          inventory={inventory}
+          onDone={() => setStep("eraCard")}
         />
       ) : null}
 
@@ -184,6 +203,61 @@ function RestartCorner({ onRestart }: { onRestart: () => void }) {
       className="absolute bottom-0 left-0 h-32 w-32 select-none"
       style={{ touchAction: "none", WebkitTapHighlightColor: "transparent" }}
     />
+  );
+}
+
+/**
+ * O inventário explicado — a última coisa que o sistema esconde.
+ *
+ * Durante o jogo inteiro o menu respondeu "Utilidade: a ser determinada."
+ * a quem foi conferir para que os itens serviam. Aqui os onze aparecem
+ * de uma vez, em ordem de coleta, e a resposta finalmente vem: eles são a
+ * história de vocês na ordem em que aconteceu, e continuam não servindo
+ * para nada. As duas coisas ao mesmo tempo.
+ */
+function InventoryReveal({
+  inventory,
+  onDone,
+}: {
+  inventory: string[];
+  onDone: () => void;
+}) {
+  const reducedMotion = useReducedMotion();
+
+  return (
+    <div className="flex w-full max-w-xs flex-col items-center gap-6">
+      <p className="font-mono text-[10px] tracking-[0.3em] text-neutral-500">
+        {inventoryRevealHeader}
+      </p>
+
+      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-4">
+        {inventory.map((id, index) => {
+          const item = getInventoryItem(id);
+          if (!item) return null;
+          return (
+            <motion.span
+              key={id}
+              initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.4,
+                delay: reducedMotion ? 0 : index * 0.16,
+              }}
+              className="text-neutral-300"
+              title={item.name}
+            >
+              <InventoryGlyph kind={item.glyph} size={30} />
+            </motion.span>
+          );
+        })}
+      </div>
+
+      <NarratorText
+        lines={inventoryRevealLines}
+        onDone={onDone}
+        lineClassName="whitespace-pre-line text-center text-[17px] leading-relaxed"
+      />
+    </div>
   );
 }
 
