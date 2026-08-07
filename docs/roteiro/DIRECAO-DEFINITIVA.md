@@ -62,6 +62,15 @@ Três regras estruturais:
 - **Dois emojis, só.** 🏆 nas conquistas e 🖕 na quinta tentativa de abrir
   a Era XIII.
 
+## Recomeçar do zero
+
+Testar de novo precisa ser possível sem quebrar a regra de mão única. Dois caminhos, nenhum visível:
+
+- **`?reiniciar` na URL** (ou `#reiniciar`) apaga o progresso e volta ao boot, de qualquer etapa. O token é removido da barra de endereço em seguida, para que um F5 não apague outra vez.
+- **Toque longo de 4 s no canto inferior esquerdo da tela do NAMORADOS** — canto oposto e tempo dobrado em relação ao gatilho do final, para que os dois gestos nunca se confundam. Só existe nessa tela.
+
+O que **não** pode acontecer: um caminho de volta em qualquer momento anterior. Depois do ENCERRAR não há como voltar ao jogo, e a tela "Olha para ele." continua sem nenhuma interação visível.
+
 ## Como ensaiar
 
 `NEXT_PUBLIC_ENABLE_DEV_TOOLS=true npm run dev` monta o painel DEV no canto

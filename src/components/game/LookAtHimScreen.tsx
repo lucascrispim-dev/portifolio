@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { useLongPress } from "@/hooks/useLongPress";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { projectConfig } from "@/config/project";
 
@@ -20,42 +21,17 @@ import { projectConfig } from "@/config/project";
  */
 export function LookAtHimScreen({ onTrigger }: { onTrigger: () => void }) {
   const reducedMotion = useReducedMotion();
-  const firedRef = useRef(false);
-  const holdTimerRef = useRef<number | null>(null);
-  const [holding, setHolding] = useState(false);
-
-  function fire() {
-    if (firedRef.current) return;
-    firedRef.current = true;
-    onTrigger();
-  }
-
-  function clearHold() {
-    if (holdTimerRef.current !== null) {
-      window.clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    setHolding(false);
-  }
-
-  function startHold() {
-    if (firedRef.current || holdTimerRef.current !== null) return;
-    setHolding(true);
-    holdTimerRef.current = window.setTimeout(() => {
-      holdTimerRef.current = null;
-      setHolding(false);
-      fire();
-    }, projectConfig.finalTriggerHoldMs);
-  }
+  const { holding, fireNow, handlers } = useLongPress(
+    onTrigger,
+    projectConfig.finalTriggerHoldMs
+  );
 
   // Rede de segurança: independente do gesto.
   useEffect(() => {
-    const timer = window.setTimeout(fire, projectConfig.finalTriggerFallbackMs);
+    const timer = window.setTimeout(fireNow, projectConfig.finalTriggerFallbackMs);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => () => clearHold(), []);
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center bg-black px-8 text-center">
@@ -76,11 +52,7 @@ export function LookAtHimScreen({ onTrigger }: { onTrigger: () => void }) {
       <div
         aria-hidden
         data-final-trigger={holding ? "holding" : "idle"}
-        onPointerDown={startHold}
-        onPointerUp={clearHold}
-        onPointerCancel={clearHold}
-        onPointerLeave={clearHold}
-        onContextMenu={(event) => event.preventDefault()}
+        {...handlers}
         className="absolute bottom-0 right-0 h-32 w-32 select-none"
         style={{ touchAction: "none", WebkitTapHighlightColor: "transparent" }}
       />

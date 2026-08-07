@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { AchievementCard } from "@/components/game/AchievementCard";
 import { ConfettiExplosion } from "@/components/game/ConfettiExplosion";
 import { NarratorText } from "@/components/game/NarratorText";
+import { useLongPress } from "@/hooks/useLongPress";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { projectConfig } from "@/config/project";
 import { pace } from "@/lib/pacing";
@@ -15,6 +16,9 @@ const THE_NEXT_ERA: Achievement = {
   id: "the-next-era",
   title: "THE NEXT ERA",
 };
+
+/** Bem mais longo que o gatilho do final: aqui não pode haver engano. */
+const RESTART_HOLD_MS = 4000;
 
 type Step =
   | "received"
@@ -60,8 +64,11 @@ const CONFETTI_ORIGINS = [
  */
 export function AfterYesSequence({
   onAchievement,
+  onRestart,
 }: {
   onAchievement: (id: string) => void;
+  /** Recomeço do zero, só depois que a última tela chegou. */
+  onRestart: () => void;
 }) {
   const reducedMotion = useReducedMotion();
   const [step, setStep] = useState<Step>("received");
@@ -139,19 +146,44 @@ export function AfterYesSequence({
       ) : null}
 
       {step === "namorados" ? (
-        <div className="flex flex-col items-center gap-8">
-          <motion.p
-            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 1.6 }}
-            className="font-serif text-4xl tracking-[0.12em] text-neutral-50"
-          >
-            NAMORADOS
-          </motion.p>
-          <AchievementCard achievement={THE_NEXT_ERA} onUnlock={onAchievement} />
-        </div>
+        <>
+          <RestartCorner onRestart={onRestart} />
+          <div className="flex flex-col items-center gap-8">
+            <motion.p
+              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 1.6 }}
+              className="font-serif text-4xl tracking-[0.12em] text-neutral-50"
+            >
+              NAMORADOS
+            </motion.p>
+            <AchievementCard achievement={THE_NEXT_ERA} onUnlock={onAchievement} />
+          </div>
+        </>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Recomeçar do zero, para testar de novo.
+ *
+ * Só existe nesta tela — depois do NAMORADOS não há mais nada a
+ * estragar — e só responde a um toque longo de 4s no canto **esquerdo**,
+ * oposto ao gatilho do final, para que os dois gestos nunca se confundam.
+ * Continua sem rótulo e sem contorno: quem não souber que está ali não
+ * encontra por acaso.
+ */
+function RestartCorner({ onRestart }: { onRestart: () => void }) {
+  const { handlers } = useLongPress(onRestart, RESTART_HOLD_MS);
+  return (
+    <div
+      aria-hidden
+      data-restart-trigger
+      {...handlers}
+      className="absolute bottom-0 left-0 h-32 w-32 select-none"
+      style={{ touchAction: "none", WebkitTapHighlightColor: "transparent" }}
+    />
   );
 }
 
