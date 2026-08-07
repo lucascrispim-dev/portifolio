@@ -235,7 +235,12 @@ function FinalStageRenderer({
       );
 
     case "answered":
-      return <AfterYesSequence onAchievement={onAchievement} />;
+      return (
+        <AfterYesSequence
+          onAchievement={onAchievement}
+          onRestart={() => dispatch({ type: "RESET" })}
+        />
+      );
 
     default:
       return null;

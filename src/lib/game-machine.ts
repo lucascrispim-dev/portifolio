@@ -24,7 +24,7 @@ export type GameAction =
   | { type: "SET_FAKE_RESET_STAGE"; stage: FakeResetStage }
   | { type: "ERA_XIII_TAP" }
   | { type: "SET_FINAL_STAGE"; stage: FinalStage }
-  | { type: "DEV_RESET" }
+  | { type: "RESET" }
   | { type: "DEV_SET_ERA"; era: PlayableEraId }
   | { type: "DEV_SET_FINAL_STAGE"; stage: FinalStage };
 
@@ -150,7 +150,12 @@ export function transition(
       return { ...progress, finalStage: action.stage };
     }
 
-    case "DEV_RESET":
+    /**
+     * Recomeço do zero. Não é ação de dev: em produção é o único caminho
+     * de volta, disparado por `?reiniciar` na URL ou pelo toque longo
+     * escondido na última tela (ver lib/restart.ts).
+     */
+    case "RESET":
       return createInitialProgress();
 
     case "DEV_SET_ERA": {

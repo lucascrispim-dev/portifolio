@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { transition, type GameAction } from "@/lib/game-machine";
+import { consumeRestartRequest } from "@/lib/restart";
 import { createInitialProgress, loadProgress, saveProgress } from "@/lib/storage";
 import type { GameProgress } from "@/types/game";
 
@@ -29,6 +30,9 @@ export function useGameProgress() {
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
+    // `?reiniciar` na URL apaga o salvo antes de qualquer leitura, então
+    // o que se recupera abaixo já é o estado zerado (ver lib/restart.ts).
+    consumeRestartRequest();
     const restored = loadProgress();
     dispatch({ type: "HYDRATE", progress: restored });
   }, []);
@@ -37,6 +41,19 @@ export function useGameProgress() {
     if (progress === initialSnapshot) return;
     saveProgress(progress);
   }, [progress, initialSnapshot]);
+
+  /**
+   * Trocar só o hash (`#reiniciar`) não recarrega a página, então o efeito
+   * de hidratação acima nunca voltaria a rodar. Sem isto, essa forma de
+   * reiniciar simplesmente não funcionaria com a página já aberta.
+   */
+  useEffect(() => {
+    function handleHashChange() {
+      if (consumeRestartRequest()) dispatch({ type: "RESET" });
+    }
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   const dispatchAction = useCallback((action: GameAction) => dispatch(action), []);
 

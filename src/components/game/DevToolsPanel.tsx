@@ -81,7 +81,7 @@ export function DevToolsPanel({
           <button
             type="button"
             className="mb-3 min-h-11 w-full rounded-lg bg-red-700 px-3 py-2"
-            onClick={() => dispatch({ type: "DEV_RESET" })}
+            onClick={() => dispatch({ type: "RESET" })}
           >
             Limpar progresso
           </button>

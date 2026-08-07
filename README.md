@@ -65,6 +65,15 @@ Checagens rápidas depois de publicar, direto no celular:
 - Nenhum botão "DEV" aparece em canto nenhum da tela.
 - O botão "Não" foge e não escapa da área visível.
 
+## Recomeçar do zero
+
+O jogo é de mão única de propósito: a sequência final não anda para trás e a tela "Olha para ele." não tem botão nenhum. Isso protege a noite, mas deixaria você sem saída na hora de testar — em produção não existe painel de dev. Então há dois caminhos, nenhum deles visível na interface:
+
+1. **Abra a URL com `?reiniciar`** — por exemplo `https://<projeto>.vercel.app/?reiniciar`. O progresso é apagado e o jogo volta ao boot. O token some da barra de endereço logo depois, então um F5 seguinte **não** apaga de novo. Também funciona como `#reiniciar`, forma que sobrevive a apps de mensagem que reescrevem a query string.
+2. **Toque longo de 4 s no canto inferior esquerdo da última tela** (a do NAMORADOS). É o canto oposto ao gatilho do final, e o tempo é o dobro, justamente para os dois gestos nunca se confundirem.
+
+O segundo caminho só existe depois do NAMORADOS — quando não há mais nada a estragar. Em nenhum momento antes disso existe uma forma de voltar.
+
 > Cuidado: o progresso é gravado por navegador. Se o jogador começar no Chrome e depois abrir no Safari, ele recomeça do zero — combine de usar sempre o mesmo navegador, e evite janela anônima.
 
 ## Testes e validação
