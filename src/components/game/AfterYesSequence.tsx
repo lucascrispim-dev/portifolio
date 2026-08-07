@@ -124,6 +124,7 @@ export function AfterYesSequence({
       {step === "theOne" ? (
         <NarratorText
           lines={afterYesLines}
+          readingPace
           onDone={() => setStep(inventory.length > 0 ? "inventory" : "eraCard")}
           lineClassName="whitespace-pre-line text-[18px] leading-relaxed"
         />
@@ -159,6 +160,7 @@ export function AfterYesSequence({
       {step === "closing" ? (
         <NarratorText
           lines={closingLines}
+          readingPace
           onDone={() => setStep("namorados")}
           lineClassName="whitespace-pre-line text-[18px] leading-relaxed"
         />
@@ -254,6 +256,7 @@ function InventoryReveal({
 
       <NarratorText
         lines={inventoryRevealLines}
+        readingPace
         onDone={onDone}
         lineClassName="whitespace-pre-line text-center text-[17px] leading-relaxed"
       />

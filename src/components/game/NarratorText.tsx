@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { TypewriterText } from "@/components/game/TypewriterText";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { pace } from "@/lib/pacing";
 import type { NarratorLine } from "@/types/game";
 
 const PAUSE_MS: Record<NonNullable<NarratorLine["pause"]>, number> = {
@@ -16,6 +17,17 @@ type NarratorTextProps = {
   onDone?: () => void;
   className?: string;
   lineClassName?: string;
+  /**
+   * Mantém um tempo mínimo de leitura mesmo sob `prefers-reduced-motion`.
+   *
+   * Quem tem movimento reduzido ligado pediu menos animação, não menos
+   * tempo para ler. Numa tela com botão isso não importa — o jogador
+   * controla o ritmo. Mas quando `onDone` avança a sequência sozinho, sem
+   * piso as falas passavam instantaneamente: a confissão inteira, a
+   * declaração do Lucas e a revelação do inventário piscavam e sumiam,
+   * sem botão nenhum para voltar. Ligue nesses casos.
+   */
+  readingPace?: boolean;
 };
 
 /**
@@ -31,6 +43,7 @@ export function NarratorText({
   onDone,
   className,
   lineClassName,
+  readingPace = false,
 }: NarratorTextProps) {
   const reducedMotion = useReducedMotion();
   const [visibleCount, setVisibleCount] = useState(() => (lines.length > 0 ? 1 : 0));
@@ -46,8 +59,12 @@ export function NarratorText({
   }, []);
 
   function handleLineTyped(index: number) {
-    const pause = lines[index].pause ? PAUSE_MS[lines[index].pause!] : 350;
-    const wait = reducedMotion ? 0 : pause;
+    const pauseMs = lines[index].pause ? PAUSE_MS[lines[index].pause!] : 350;
+    const wait = readingPace
+      ? pace(pauseMs, reducedMotion)
+      : reducedMotion
+        ? 0
+        : pauseMs;
 
     if (index < lines.length - 1) {
       window.setTimeout(() => setVisibleCount((count) => count + 1), wait);
