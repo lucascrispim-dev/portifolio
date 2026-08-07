@@ -100,7 +100,7 @@ export function useGlobalEasterEggs({
     if (recentClicks.current.length < RAPID_CLICKS_REQUIRED) return;
     recentClicks.current = [];
     if (easterEggs.includes("cacau-apressada")) return;
-    const message = `Calma, ${projectConfig.playerTwoName}.\nAs Eras não vão fugir.`;
+    const message = `Calma, ${projectConfig.playerTwoJokeName}.\nAs Eras não vão fugir.`;
     onEggRef.current({ easterEggId: "cacau-apressada", message });
     show(message);
   }

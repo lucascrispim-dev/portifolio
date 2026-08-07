@@ -1,23 +1,28 @@
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
-const PIZZA: EraDefinition["achievements"][number] = {
-  id: "pizza-professional",
-  title: "PIZZA PROFESSIONAL",
-};
-
 const CONFIDENTIAL: EraDefinition["achievements"][number] = {
   id: "confidential-information",
   title: "CONFIDENTIAL INFORMATION",
 };
 
+const MIJAO: EraDefinition["achievements"][number] = {
+  id: "mijao",
+  title: "MIJÃO",
+};
+
+/**
+ * Era IV — a primeira depois do falso reset. O narrador finge que nada
+ * aconteceu, e a Era inteira se passa na Augusta: perguntas sobre a rua
+ * e um banheiro que não existe.
+ */
 export const era4: EraDefinition = {
   id: 4,
   code: "IV",
   title: "Red",
   album: "Red",
   theme: eraThemes[4],
-  achievements: [PIZZA, CONFIDENTIAL, { id: "the-lucky-one", title: "THE LUCKY ONE" }],
+  achievements: [CONFIDENTIAL, MIJAO],
   screens: [
     {
       kind: "titleCard",
@@ -29,23 +34,39 @@ export const era4: EraDefinition = {
           text: "Algumas histórias\nmudam por causa\nde grandes acontecimentos.",
           pause: "short",
         },
-        { text: "Outras mudam\npor causa de pizza.", pause: "long" },
+        { text: "Outras mudam\nna Augusta,\nàs três da manhã.", pause: "long" },
+      ],
+      cta: "CONTINUAR",
+    },
+    {
+      kind: "lines",
+      id: "era4-nada-aconteceu",
+      lines: [
+        { text: "Antes de continuar.", pause: "short" },
+        { text: "Não aconteceu nada.", pause: "short" },
+        { text: "Você imaginou.", pause: "long" },
       ],
       cta: "CONTINUAR",
     },
     {
       kind: "quiz",
-      id: "era4-pizza",
-      prompt: [{ text: "Um dia\nquase sempre fica melhor com:" }],
+      id: "era4-augusta",
+      prompt: [{ text: "Qual rua tem\na maior densidade\nde histórias de vocês\npor metro quadrado?" }],
       options: [
-        { id: "pizza", label: "Pizza.", correct: true },
-        { id: "sushi", label: "Sushi." },
-        { id: "hamburguer", label: "Hambúrguer." },
-        { id: "discussao", label: "Uma discussão desnecessária." },
+        { id: "augusta", label: "Augusta.", correct: true },
+        { id: "paulista", label: "Paulista." },
+        { id: "consolacao", label: "Consolação." },
+        { id: "nenhuma", label: "Prefiro não responder." },
       ],
-      onWrong: [{ text: "Não.\nPensa melhor." }],
-      onCorrect: [{ text: "Hipótese confirmada.", pause: "long" }],
-      achievement: PIZZA,
+      onWrong: [
+        { text: "Não.", pause: "short" },
+        { text: "E você sabe que não.", pause: "short" },
+      ],
+      onCorrect: [
+        { text: "Augusta confirmada.", pause: "short" },
+        { text: "Registros parciais.", pause: "short" },
+        { text: "Por decisão do sistema.", pause: "long" },
+      ],
     },
     {
       kind: "quiz",
@@ -65,6 +86,7 @@ export const era4: EraDefinition = {
       ],
       achievement: CONFIDENTIAL,
     },
+    { kind: "minigame", id: "era4-banheiro", game: "bathroomMaze" },
     {
       kind: "compatibility",
       id: "era4-compatibilidade",
@@ -75,11 +97,18 @@ export const era4: EraDefinition = {
           pause: "long",
         },
       ],
+      theOneEasterEgg: true,
     },
     {
       kind: "eraOutro",
       id: "era4-outro",
-      progressLabel: "4 de 13",
+      progressLabel: "PROGRESSO: INDETERMINADO",
+      recalculatedLabel: "52%",
+      recalculatedLines: [
+        { text: "Pronto.", pause: "short" },
+        { text: "Inventei um número.", pause: "short" },
+        { text: "Ninguém vai conferir.", pause: "long" },
+      ],
       lines: [{ text: "Tudo mudou.", pause: "long" }],
       cta: "PRÓXIMA ERA",
     },

@@ -1,8 +1,8 @@
 # PROJECT: NEXT ERA
 
-Uma experiência web narrativa, mobile-first, jogada de uma sentada (45 a 70 minutos). O jogo aparenta ter **13 Eras**, mas só as oito primeiras existem: depois de concluir a folklore, um "evento não programado" interrompe o sistema, as Eras IX a XIII são canceladas e o controle passa para o Lucas. **O pedido não acontece no site.**
+Uma experiência web narrativa, mobile-first, jogada de uma sentada (30 a 40 minutos). O jogo aparenta ter **13 Eras**, mas só as oito primeiras existem — e o sistema que as apresenta passa a noite inteira sabotando o próprio jogador: mente sobre o progresso, mede a paciência dele, recusa o nome dele e, depois da Era III, finge corromper os dados e reiniciar do zero. Depois da folklore o narrador se dissolve, o texto vira primeira pessoa e o controle passa para o Lucas. **O pedido não acontece no site.**
 
-> **Fonte de verdade:** [`docs/roteiro/NOVO-FLUXO-13-ERAS.md`](docs/roteiro/NOVO-FLUXO-13-ERAS.md). Os oito arquivos de Era ao lado dele documentam o roteiro anterior (progressão por acontecimentos reais ao longo de um dia) e ficam preservados como histórico — o código em `src/content/*.ts` deriva do fluxo novo.
+> **Fonte de verdade:** [`docs/roteiro/DIRECAO-DEFINITIVA.md`](docs/roteiro/DIRECAO-DEFINITIVA.md). Os arquivos `ERA * .md` e `NOVO-FLUXO-13-ERAS.md` ao lado dele documentam roteiros anteriores e ficam preservados como histórico — o código em `src/content/*.ts` deriva da direção definitiva.
 
 ## Stack
 
@@ -14,11 +14,19 @@ Sem backend, sem banco de dados. Não há cronômetro, senha, localização, pai
 
 Até o jogador tocar em **ENCERRAR**, tudo na tela sustenta que a história continua depois:
 
-- o mapa lista 13 Eras com nomes reais de álbuns (evermore, Midnights, The Tortured Poets Department, The Life of a Showgirl), então a lista parece um plano completo;
+- o mapa lista 13 Eras, com as Eras IX a XII em **"???"** e a XIII em **CLASSIFICADO**, pulsando;
 - a compatibilidade sobe em múltiplos de 13 e **sempre trava em 99%**, com o 1% restante atribuído à Era XIII;
+- o progresso exibido é declarado pelo conteúdo, não calculado: ele sobe, "recalcula" e **desce** (73% → 18%, 91% → 89%);
+- a Era VI oferece "VER RESPOSTA DE LUCAS" e responde ACESSO NEGADO, disponível na Era XIII;
 - a Era VIII se apresenta como arquivo de análise e termina com "Status: AINDA NÃO ESCRITO".
 
-Se alguma dessas peças for enfraquecida, a surpresa deixa de funcionar. `tests/era-catalog.test.ts` protege as mais frágeis.
+O 100% aparece uma única vez no jogo inteiro: depois do "sim", na continuação que só o Lucas dispara.
+
+Se alguma dessas peças for enfraquecida, a surpresa deixa de funcionar. `tests/era-catalog.test.ts` e `tests/game-machine.test.ts` protegem as mais frágeis.
+
+### O falso reset
+
+Depois da Era III o jogo exibe ERRO 13, glitcha, declara FALHA CRÍTICA e reexibe a introdução inteira. **Nada é apagado**: só o campo `fakeResetStage` avança no `localStorage`. Isso é deliberado — fechar o navegador no meio do susto não pode virar um susto de verdade. Há teste para isso.
 
 ## Instalação
 
@@ -78,16 +86,19 @@ Toda configuração editável fica centralizada em [`src/config/project.ts`](src
 export const projectConfig = {
   projectName: "PROJECT: NEXT ERA",
   playerOneName: "Lucas",
-  playerTwoName: "Cacau Nazaret", // troque aqui — não precisa procurar em outros arquivos
-  symbolicDate: "08/08",
+  playerTwoRealName: "Cauã",          // o nome de verdade, usado nos momentos sinceros
+  playerTwoJokeName: "Cacau Nazaret", // a "correção" que o sistema insiste em aplicar
+  startDate: "08.08.2026",
   noButtonAttempts: 8,
   storageKey: "project-next-era-progress",
-  totalEras: 13,          // quantas Eras o jogo aparenta ter
-  longLiveThreshold: 7,   // achievements para destravar o "Long Live"
+  totalEras: 13,               // quantas Eras o jogo aparenta ter
+  longLiveThreshold: 7,        // achievements para destravar o "Long Live"
+  finalTriggerHoldMs: 2000,    // duração do toque longo que destrava o final
+  finalTriggerFallbackMs: 240000, // rede de segurança, caso o gesto falhe
 };
 ```
 
-O mesmo arquivo tem `bonusNarratorLines`, um espaço central para novas piadas internas ou mensagens espontâneas extras do narrador, sem tocar em nenhum componente.
+O mesmo arquivo tem `observationLines`, um espaço central para novas falas de observação do narrador, sem tocar em nenhum componente. O texto do final — a sua declaração — fica isolado em [`src/content/final-script.ts`](src/content/final-script.ts), que é a única parte pensada para você reescrever com calma.
 
 As cores/tipografia/textura de cada Era estão em [`src/config/themes.ts`](src/config/themes.ts).
 
@@ -100,32 +111,35 @@ Desligado por padrão. Para ativar localmente (nunca em produção):
 NEXT_PUBLIC_ENABLE_DEV_TOOLS=true
 ```
 
-Com a flag ativa, um botão **DEV** aparece no canto inferior direito, permitindo pular para qualquer Era, limpar o progresso e forçar cada etapa da sequência final (`interrupted`, `transferring`, `final`) — sem senha visível dentro do jogo. Confirme que `NEXT_PUBLIC_ENABLE_DEV_TOOLS` **não** está definida (ou está `false`) antes de publicar.
+Com a flag ativa, um botão **DEV** aparece no canto inferior direito, permitindo pular para qualquer Era, limpar o progresso, mover a etapa do falso reset e forçar cada etapa da sequência final. O atalho **Ensaiar "Olha para ele."** existe por um motivo prático: o toque longo que destrava o final precisa ser treinado sem jogar as oito Eras antes. Confirme que `NEXT_PUBLIC_ENABLE_DEV_TOOLS` **não** está definida (ou está `false`) antes de publicar.
 
 ## Arquitetura
 
 ```
 docs/roteiro/
-  NOVO-FLUXO-13-ERAS.md  Fonte de verdade atual
-  ERA * .md              Roteiro anterior, preservado como histórico
+  DIRECAO-DEFINITIVA.md  Fonte de verdade atual
+  NOVO-FLUXO-13-ERAS.md  Roteiro anterior, preservado como histórico
+  ERA * .md              Roteiro original, preservado como histórico
 src/
   app/                   page.tsx, layout.tsx (fontes + comentário escondido), globals.css
   components/game/       Telas e componentes; minigames/ tem os minijogos
   content/               Conteúdo tipado das 8 Eras + catálogo das 13
   config/                projectConfig + temas por Era
   hooks/                 useGameProgress (estado + persistência), useReducedMotion
-  lib/                   storage.ts, game-machine.ts (reducer puro), no-button.ts, audio.ts
+  lib/                   storage.ts, game-machine.ts (reducer puro), no-button.ts, patience.ts, audio.ts
   types/                 Tipos centrais (GameProgress, EraDefinition, EraScreen, ...)
 tests/                   Máquina de estados, catálogo das Eras e botão "Não"
 ```
 
 A máquina de estados (`src/lib/game-machine.ts`) é um reducer puro e testável. Cada Era avança por cenas (`ERA_SCENE_ADVANCE`) e, ao terminar a última, `ERA_COMPLETE` libera a seguinte imediatamente. Só as Eras 1 a 8 têm conteúdo; as 9 a 13 vivem apenas em `src/content/era-catalog.ts` e nunca saem de `locked`.
 
-A sequência final é guardada em `finalStage` (`playing` → `interrupted` → `transferring` → `final`) e **persistida**: recarregar a página depois do ENCERRAR não devolve o jogador ao jogo nem repete a surpresa.
+A sequência final é guardada em `finalStage` (`playing` → `confession` → `eraXiii` → `transferring` → `lookAtHim` → `answered`) e **persistida**. O reducer recusa retrocessos: recarregar a página depois do ENCERRAR não devolve o jogador ao jogo nem repete a confissão. Só `DEV_SET_FINAL_STAGE`, do painel de desenvolvimento, move a etapa livremente — é o que permite ensaiar.
+
+A tela **"Olha para ele."** não tem nenhuma interação visível. O que existe é um alvo invisível no canto inferior direito: um toque longo de 2 s dispara a continuação. Se o gesto falhar na hora, um timer de segurança (`finalTriggerFallbackMs`, 4 min) dispara sozinho — um gesto errado sob pressão não pode deixar a noite travada numa tela.
 
 ## Som
 
-Desligado por padrão e opcional em tudo. Os efeitos são sintetizados na hora com a Web Audio API (`src/lib/audio.ts`) — nenhum arquivo, nenhuma requisição de rede e nada protegido por direitos autorais. O controle fica no canto superior direito (`SoundToggle`), com `aria-label`, e some por completo na sequência final da Era VIII, onde não pode existir nenhuma opção na tela.
+Desligado por padrão e opcional em tudo. Os efeitos são sintetizados na hora com a Web Audio API (`src/lib/audio.ts`) — nenhum arquivo, nenhuma requisição de rede e nada protegido por direitos autorais. O controle fica no menu do topo (`SoundToggle`), com `aria-label`, e some por completo na sequência final, onde não pode existir nenhuma opção na tela.
 
 ## Prototipagem visual
 
@@ -133,4 +147,4 @@ O sistema de temas e as telas-chave foram prototipados antes da implementação 
 
 ## Sobre o texto e o roteiro
 
-Falas do narrador, perguntas, respostas, badges, missões e easter eggs em `src/content/*.ts` são reproduzidos verbatim de `docs/roteiro/`. Apenas o "chrome" estrutural de retorno ao app (ex.: "Você voltou... já aconteceu?") foi adaptado por Era a partir do padrão estabelecido pela Era I, conforme instruído no roteiro — nenhum texto narrativo principal foi inventado.
+Falas do narrador, perguntas, respostas, badges e easter eggs vivem em `src/content/*.ts`, nunca dentro de JSX. Os arquivos de `docs/roteiro/` são a origem e **não devem ser alterados**. Nada de material protegido: sem áudio, arte ou letra da Taylor Swift — nomes de álbuns e músicas aparecem apenas como texto. Dois emojis são permitidos na interface: 🏆 nas conquistas e 🖕 na quinta tentativa de abrir a Era XIII.

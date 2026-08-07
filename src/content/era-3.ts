@@ -1,19 +1,24 @@
 import { eraThemes } from "@/config/themes";
 import type { EraDefinition } from "@/types/game";
 
+const ENCHANTED = {
+  id: "enchanted",
+  title: "ENCHANTED",
+  description: "Você tocou em treze estrelas. A décima terceira resistiu.",
+};
+
+/**
+ * Era III — as perguntas ficam sinceras e a Era termina em desastre. É
+ * aqui que o jogo entrega o celular para o Lucas escolher algo em
+ * segredo e, logo depois, finge perder tudo (ERRO 13).
+ */
 export const era3: EraDefinition = {
   id: 3,
   code: "III",
   title: "Speak Now",
   album: "Speak Now",
   theme: eraThemes[3],
-  achievements: [
-    {
-      id: "enchanted",
-      title: "ENCHANTED",
-      description: "Você tocou em treze estrelas. Taylor aprovaria.",
-    },
-  ],
+  achievements: [ENCHANTED],
   screens: [
     {
       kind: "titleCard",
@@ -30,47 +35,35 @@ export const era3: EraDefinition = {
       cta: "CONTINUAR",
     },
     {
-      kind: "quiz",
-      id: "era3-momento",
+      kind: "openQuestion",
+      id: "era3-atencao",
+      questionId: "primeira-atencao",
+      label: "PERGUNTA ABERTA",
       prompt: [
-        {
-          text: "Qual momento fez Lucas perceber\nque esta história\npoderia ser diferente?",
-        },
+        { text: "Chega de alternativas.", pause: "short" },
+        { text: "O que chamou sua atenção\nno Lucas, no começo?", pause: "short" },
       ],
-      options: [
-        { id: "pizza", label: "A pizza." },
-        { id: "toy-story", label: "Assistir Toy Story juntos.", correct: true },
-        { id: "beijo", label: "O primeiro beijo." },
-        { id: "taylor", label: "Taylor Swift." },
-      ],
-      onWrong: [{ text: "Não.\nPensa melhor." }],
-      onCorrect: [
+      echo: true,
+      response: [
         { text: "Registrado.", pause: "short" },
-        {
-          text: "Às vezes uma grande mudança\ncomeça no momento mais comum.",
-          pause: "long",
-        },
+        { text: "Ele não vai ver isso agora.", pause: "short" },
+        { text: "Mas vai ver.", pause: "long" },
       ],
     },
     {
-      kind: "quiz",
-      id: "era3-descricao",
-      prompt: [{ text: "Como você descreveria\naquele momento?" }],
-      options: [
-        { id: "simples", label: "Simples." },
-        { id: "importante", label: "Importante." },
-        { id: "inesperado", label: "Inesperado." },
-        {
-          id: "enchanted",
-          label: "Enchanted.",
-          response: [
-            { text: "Referência detectada.", pause: "short" },
-            { text: "Nota:\n13 de 10.", pause: "long" },
-          ],
-        },
+      kind: "openQuestion",
+      id: "era3-percebeu",
+      questionId: "quando-percebeu",
+      label: "PERGUNTA ABERTA",
+      prompt: [
+        { text: "E quando você percebeu\nque isso tinha virado\noutra coisa?", pause: "short" },
       ],
-      anyAnswerAccepted: true,
-      onCorrect: [{ text: "Resposta registrada.", pause: "long" }],
+      echo: true,
+      response: [
+        { text: "Interessante.", pause: "short" },
+        { text: "Minhas anotações\ndizem outra data.", pause: "short" },
+        { text: "Mas eu não discuto\ncom testemunha ocular.", pause: "long" },
+      ],
     },
     {
       kind: "quiz",
@@ -91,17 +84,11 @@ export const era3: EraDefinition = {
         },
       ],
     },
-    { kind: "minigame", id: "era3-estrelas", game: "starCursor" },
-    {
-      kind: "eraOutro",
-      id: "era3-outro",
-      progressLabel: "3 de 13",
-      lines: [
-        { text: "Era concluída.", pause: "short" },
-        { text: "Ainda não é o final.", pause: "short" },
-        { text: "Nem perto.", pause: "long" },
-      ],
-      cta: "PRÓXIMA ERA",
-    },
+    { kind: "minigame", id: "era3-entrega", game: "handToLucas" },
+    // O troféu ENCHANTED é entregue pelo próprio minijogo, quando (e se)
+    // a décima terceira estrela se deixa pegar.
+    { kind: "minigame", id: "era3-estrelas", game: "enchantedStars" },
+    // A Era III não tem desfecho: ela quebra.
+    { kind: "erro13", id: "era3-erro13" },
   ],
 };

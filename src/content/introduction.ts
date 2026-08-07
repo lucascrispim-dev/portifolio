@@ -1,5 +1,5 @@
 import { projectConfig } from "@/config/project";
-import type { NarratorLine } from "@/types/game";
+import type { Achievement, NarratorLine } from "@/types/game";
 
 export const bootLines: NarratorLine[] = [
   { text: "Inicializando...", pause: "short" },
@@ -14,7 +14,7 @@ export const classificationHeader = "CLASSIFICAÇÃO\nCONFIDENCIAL";
 export const classificationBlock: string[] = [
   "Acesso permitido apenas para:",
   projectConfig.playerOneName,
-  projectConfig.playerTwoName,
+  projectConfig.playerTwoJokeName,
 ];
 
 export const classificationAnalyzing = "Identificando objetivo do projeto...";
@@ -44,6 +44,18 @@ export const noButtonExplodedLines: NarratorLine[] = [
   { text: "Agora escolha\nentre Sim e Sim.", pause: "long" },
 ];
 
+/** Entregue por perseguir um botão que nunca teve intenção de parar. */
+export const noButtonAchievement: Achievement = {
+  id: "persistencia-questionavel",
+  title: "PERSISTÊNCIA QUESTIONÁVEL",
+};
+
+/** Primeira vez que o sistema aplica o nome "corrigido". */
+export const welcomeLines: NarratorLine[] = [
+  { text: "Decisão registrada.", pause: "short" },
+  { text: `Bem-vindo,\n${projectConfig.playerTwoJokeName}.`, pause: "long" },
+];
+
 export const termsItems: string[] = [
   "Vai ler antes de apertar os botões.",
   "Não tentará descobrir o final.",
@@ -51,7 +63,7 @@ export const termsItems: string[] = [
   "Aceita que Taylor Swift melhora qualquer situação.",
   "Aceita a presença de bugs emocionais.",
   "Não tentará acessar a Era XIII antes da hora.",
-  `Aceita ser chamado de ${projectConfig.playerTwoName}.`,
+  `Aceita ser chamado de ${projectConfig.playerTwoJokeName}.`,
   "Aceita que o desenvolvedor é dramático.",
   "Concorda que qualquer reclamação poderá resultar em mais perguntas.",
   "Entende que o desenvolvedor não se responsabiliza por surtos, confetes ou sentimentos.",
@@ -59,7 +71,10 @@ export const termsItems: string[] = [
 
 export const termsFastClickLines: NarratorLine[] = [
   { text: "Leu?", pause: "short" },
-  { text: `${projectConfig.playerTwoName},\nnem deu tempo.`, pause: "short" },
+  {
+    text: `${projectConfig.playerTwoJokeName},\nnem deu tempo.`,
+    pause: "short",
+  },
   { text: "Tudo bem.\nVou fingir que acredito.", pause: "long" },
 ];
 

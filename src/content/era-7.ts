@@ -5,7 +5,8 @@ import type { EraDefinition } from "@/types/game";
 /**
  * A Era VII não pode parecer o final. É a mais leve e colorida do jogo —
  * sem despedidas, sem preparação para o pedido, sem falar em decisão
- * final (ver docs/roteiro/NOVO-FLUXO-13-ERAS.md, seção 13).
+ * final. O único conteúdo pesado é um minijogo em que quatro anéis se
+ * recusam a colaborar.
  */
 export const era7: EraDefinition = {
   id: 7,
@@ -13,10 +14,7 @@ export const era7: EraDefinition = {
   title: "Lover",
   album: "Lover",
   theme: eraThemes[7],
-  achievements: [
-    { id: "paper-rings", title: "PAPER RINGS" },
-    { id: "the-archer", title: "THE ARCHER" },
-  ],
+  achievements: [{ id: "paper-rings", title: "PAPER RINGS" }],
   screens: [
     {
       kind: "titleCard",
@@ -54,8 +52,8 @@ export const era7: EraDefinition = {
       id: "era7-te-amo",
       prompt: [{ text: "Quem costuma falar\n“te amo” primeiro?" }],
       options: [
-        { id: "lucas", label: "Lucas." },
-        { id: "cacau", label: `${projectConfig.playerTwoName}.` },
+        { id: "lucas", label: `${projectConfig.playerOneName}.` },
+        { id: "cacau", label: `${projectConfig.playerTwoJokeName}.` },
         { id: "os-dois", label: "Os dois." },
         { id: "completa", label: "A frase já vem completa." },
       ],
@@ -67,8 +65,8 @@ export const era7: EraDefinition = {
       id: "era7-idiota",
       prompt: [{ text: "E quem acrescenta\n“idiota”?" }],
       options: [
-        { id: "lucas", label: "Lucas." },
-        { id: "cacau", label: `${projectConfig.playerTwoName}.` },
+        { id: "lucas", label: `${projectConfig.playerOneName}.` },
+        { id: "cacau", label: `${projectConfig.playerTwoJokeName}.` },
         { id: "os-dois", label: "Os dois." },
         { id: "completa", label: "A frase já vem completa." },
       ],
@@ -92,19 +90,22 @@ export const era7: EraDefinition = {
       onWrong: [{ text: "Incompleto.\nPensa maior." }],
       onCorrect: [{ text: "I Think He Knows.", pause: "long" }],
     },
-    { kind: "minigame", id: "era7-confianca", game: "trustScale" },
     { kind: "minigame", id: "era7-paper-rings", game: "paperRings" },
-    { kind: "minigame", id: "era7-cruel-summer", game: "cruelSummer" },
     {
       kind: "eraOutro",
       id: "era7-outro",
-      progressLabel: "7 de 13",
-      lines: [
+      // O contador finalmente admite que anda para trás.
+      progressLabel: "91%",
+      recalculatedLabel: "89%",
+      recalculatedLines: [
+        { text: "Você regrediu.", pause: "short" },
+        { text: "Não me pergunte como.", pause: "long" },
         {
           text: "Você ainda não chegou\nnem perto da Era final.",
           pause: "long",
         },
       ],
+      lines: [{ text: "Quase lá.", pause: "short" }],
       cta: "ABRIR FOLKLORE",
     },
   ],

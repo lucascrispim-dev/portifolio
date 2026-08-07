@@ -4,7 +4,9 @@ import type { EraDefinition } from "@/types/game";
 /**
  * A Era VIII precisa parecer uma etapa de organização e análise — nunca
  * um encerramento. O jogador deve sair dela acreditando que o jogo será
- * apenas pausado até as Eras IX a XIII existirem.
+ * apenas pausado até as Eras IX a XIII existirem. O fio de invisible
+ * string termina apontando explicitamente para a Era XIII: é a última e
+ * mais forte pista falsa.
  */
 export const era8: EraDefinition = {
   id: 8,
@@ -25,7 +27,6 @@ export const era8: EraDefinition = {
       ],
       cta: "CONTINUAR",
     },
-    { kind: "minigame", id: "era8-arquivos", game: "fileCards" },
     {
       kind: "quiz",
       id: "era8-representa",
@@ -45,22 +46,6 @@ export const era8: EraDefinition = {
     },
     {
       kind: "quiz",
-      id: "era8-lucas-escolheria",
-      prompt: [{ text: "Qual destes arquivos\nLucas escolheria?" }],
-      options: [
-        { id: "toy-story", label: "TOY STORY" },
-        { id: "taylor", label: "TAYLOR SWIFT" },
-        { id: "villa-lobos", label: "VILLA-LOBOS" },
-        { id: "leite", label: "TOMAR LEITE" },
-      ],
-      anyAnswerAccepted: true,
-      onCorrect: [
-        { text: "Interessante.", pause: "short" },
-        { text: "Vamos descobrir\nse você o conhece mesmo.", pause: "long" },
-      ],
-    },
-    {
-      kind: "quiz",
       id: "era8-creditos",
       prompt: [
         { text: "Qual música\ndeveria tocar\nnos créditos desta história?" },
@@ -74,6 +59,7 @@ export const era8: EraDefinition = {
       anyAnswerAccepted: true,
       onCorrect: [{ text: "Anotado para o final.", pause: "long" }],
     },
+    { kind: "minigame", id: "era8-fio", game: "invisibleString" },
     {
       kind: "quiz",
       id: "era8-espera",
@@ -82,7 +68,6 @@ export const era8: EraDefinition = {
         { id: "premio", label: "O prêmio." },
         { id: "pergunta", label: "Uma pergunta." },
         { id: "surpresa", label: "Uma surpresa." },
-        { id: "capitulo", label: "Um capítulo novo." },
         { id: "nao-faco-ideia", label: "Não faço ideia." },
       ],
       anyAnswerAccepted: true,
@@ -95,7 +80,6 @@ export const era8: EraDefinition = {
       kind: "compatibility",
       id: "era8-compatibilidade",
       label: "COMPATIBILIDADE",
-      theOneEasterEgg: true,
       footerBlock: ["Estimativa de conclusão:", "ERA XIII"],
       lines: [
         {

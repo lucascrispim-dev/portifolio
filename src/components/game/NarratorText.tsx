@@ -46,13 +46,17 @@ export function NarratorText({
   }, []);
 
   function handleLineTyped(index: number) {
+    const pause = lines[index].pause ? PAUSE_MS[lines[index].pause!] : 350;
+    const wait = reducedMotion ? 0 : pause;
+
     if (index < lines.length - 1) {
-      const pause = lines[index].pause ? PAUSE_MS[lines[index].pause!] : 350;
-      const wait = reducedMotion ? 0 : pause;
       window.setTimeout(() => setVisibleCount((count) => count + 1), wait);
-    } else {
-      onDoneRef.current?.();
+      return;
     }
+    // A última linha também tem direito à sua pausa: sem isso, toda tela
+    // que avança sozinha corta a própria frase final no instante em que
+    // ela termina de ser digitada.
+    window.setTimeout(() => onDoneRef.current?.(), wait);
   }
 
   return (
