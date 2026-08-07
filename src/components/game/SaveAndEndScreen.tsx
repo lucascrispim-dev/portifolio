@@ -11,7 +11,9 @@ import { SystemBlock } from "@/components/game/SystemBlock";
  * o "ENCERRAR" que dispara a interrupção.
  */
 export function SaveAndEndScreen({ onEnd }: { onEnd: () => void }) {
+  const [introDone, setIntroDone] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savedResponseDone, setSavedResponseDone] = useState(false);
 
   return (
     <div className="flex flex-1 flex-col justify-center gap-6">
@@ -31,10 +33,13 @@ export function SaveAndEndScreen({ onEnd }: { onEnd: () => void }) {
             pause: "long",
           },
         ]}
+        onDone={() => setIntroDone(true)}
       />
 
       {!saved ? (
-        <ChoiceButton onClick={() => setSaved(true)}>SALVAR PROGRESSO</ChoiceButton>
+        introDone ? (
+          <ChoiceButton onClick={() => setSaved(true)}>SALVAR PROGRESSO</ChoiceButton>
+        ) : null
       ) : (
         <div className="flex flex-col gap-5">
           <NarratorText
@@ -45,8 +50,11 @@ export function SaveAndEndScreen({ onEnd }: { onEnd: () => void }) {
                 pause: "long",
               },
             ]}
+            onDone={() => setSavedResponseDone(true)}
           />
-          <ChoiceButton onClick={onEnd}>ENCERRAR</ChoiceButton>
+          {savedResponseDone ? (
+            <ChoiceButton onClick={onEnd}>ENCERRAR</ChoiceButton>
+          ) : null}
         </div>
       )}
     </div>

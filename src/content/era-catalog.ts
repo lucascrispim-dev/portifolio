@@ -20,12 +20,12 @@ export const eraCatalog: EraCatalogEntry[] = [
   { id: 10, label: "10", title: "???", playable: false },
   { id: 11, label: "11", title: "???", playable: false },
   { id: 12, label: "12", title: "???", playable: false },
-  { id: 13, label: "13", title: "THE NEXT CHAPTER", playable: false },
+  { id: 13, label: "13", title: "THE NEXT ERA", playable: false },
 ];
 
 export const eraThirteenCard = {
   eraLabel: "ERA XIII",
-  title: "THE NEXT CHAPTER",
+  title: "THE NEXT ERA",
   status: "CLASSIFICADO",
 };
 
