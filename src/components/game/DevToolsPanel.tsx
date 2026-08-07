@@ -66,7 +66,26 @@ export function DevToolsPanel({
             <br />
             achievements: {progress.achievements.length} · eggs:{" "}
             {progress.easterEggs.length}
+            <br />
+            itens: {progress.inventory.length} · arquivos:{" "}
+            {progress.files.length} · Era XIII:{" "}
+            {progress.eraXiiiDiscovered ? "descoberta" : "oculta"}
           </p>
+
+          {/*
+            O vazamento da Era III é o único caminho para a Era XIII
+            aparecer no mapa. Ensaiar o mapa "depois da descoberta" sem
+            jogar a Era III inteira precisa deste atalho.
+          */}
+          {!progress.eraXiiiDiscovered ? (
+            <button
+              type="button"
+              className="mb-3 min-h-11 w-full rounded-lg bg-neutral-700 px-3 py-2"
+              onClick={() => dispatch({ type: "DISCOVER_ERA_XIII" })}
+            >
+              Revelar a Era XIII no mapa
+            </button>
+          ) : null}
 
           <button
             type="button"

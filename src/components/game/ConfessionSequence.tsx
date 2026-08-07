@@ -62,6 +62,7 @@ export function ConfessionSequence({ onDone }: { onDone: () => void }) {
       {step === "intro" ? (
         <NarratorText
           lines={confessionIntro}
+          readingPace
           onDone={() => setStep("narrator")}
           lineClassName="whitespace-pre-line text-[17px] leading-relaxed"
         />
@@ -70,6 +71,7 @@ export function ConfessionSequence({ onDone }: { onDone: () => void }) {
       {step === "narrator" ? (
         <NarratorText
           lines={confessionNarrator}
+          readingPace
           onDone={() => setStep("origin")}
           lineClassName="whitespace-pre-line text-[16px] leading-relaxed"
         />
@@ -88,6 +90,7 @@ export function ConfessionSequence({ onDone }: { onDone: () => void }) {
       {step === "transition" ? (
         <NarratorText
           lines={transitionToFirstPerson}
+          readingPace
           onDone={() => setStep("declaration")}
           lineClassName="whitespace-pre-line text-[17px] leading-relaxed"
         />
@@ -102,6 +105,7 @@ export function ConfessionSequence({ onDone }: { onDone: () => void }) {
         >
           <NarratorText
             lines={declaration}
+            readingPace
             onDone={onDone}
             className="flex flex-col gap-4"
             lineClassName="whitespace-pre-line text-[17px] leading-relaxed text-neutral-100"

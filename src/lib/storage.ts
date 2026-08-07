@@ -8,7 +8,7 @@ import type {
   PlayableEraId,
 } from "@/types/game";
 
-export const SCHEMA_VERSION = 3 as const;
+export const SCHEMA_VERSION = 4 as const;
 
 export function createInitialProgress(): GameProgress {
   const eraStatuses = {} as Record<EraId, EraStatus>;
@@ -37,6 +37,10 @@ export function createInitialProgress(): GameProgress {
     patience: INITIAL_PATIENCE,
     fakeResetStage: "none",
     eraXiiiTapCount: 0,
+    eraXiiiDiscovered: false,
+    inventory: [],
+    files: [],
+    stats: { answers: 0, errors: 0 },
     finalStage: "playing",
   };
 }
@@ -63,6 +67,9 @@ function isValidProgress(value: unknown): value is GameProgress {
   if (typeof value.patience !== "number") return false;
   if (typeof value.fakeResetStage !== "string") return false;
   if (typeof value.finalStage !== "string") return false;
+  if (!Array.isArray(value.inventory)) return false;
+  if (!Array.isArray(value.files)) return false;
+  if (!isPlainObject(value.stats)) return false;
   return true;
 }
 

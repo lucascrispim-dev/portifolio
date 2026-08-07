@@ -5,8 +5,14 @@ import type { EraCatalogEntry, NarratorLine } from "@/types/game";
  * As 13 Eras como o jogador as vê. As Eras IX a XII levam os nomes reais
  * dos álbuns seguintes — evermore, Midnights, The Tortured Poets
  * Department, The Life of a Showgirl —, então o mapa parece um plano
- * completo e legível. A Era XIII fica CLASSIFICADO, pulsando, como a
- * promessa que sustenta o jogo inteiro (ver docs/roteiro/DIRECAO-DEFINITIVA.md).
+ * completo e legível.
+ *
+ * A Era XIII **não aparece** no começo. O jogo abre admitindo doze Eras,
+ * e o décimo terceiro cartão só passa a existir depois que o narrador
+ * deixa escapar que ele existe, no meio da Era III. Entregar a promessa
+ * na primeira tela transformaria o jogo inteiro numa contagem regressiva;
+ * escondê-la faz com que a descoberta pertença a quem estava prestando
+ * atenção (ver docs/roteiro/DIRECAO-DEFINITIVA.md).
  */
 export const eraCatalog: EraCatalogEntry[] = [
   { id: 1, label: "01", title: "Debut", playable: true },
@@ -29,6 +35,20 @@ export const eraThirteenCard = {
   title: "THE NEXT ERA",
   status: "CLASSIFICADO",
 };
+
+/**
+ * O que o mapa declara no rodapé. Antes do vazamento ele conta doze
+ * Eras com toda a confiança do mundo; depois, treze — e não comenta a
+ * mudança, porque um sistema que se corrige em voz alta não engana
+ * ninguém.
+ */
+export function eraCountLabel(eraXiiiDiscovered: boolean): string {
+  return eraXiiiDiscovered ? "13 ERAS MAPEADAS" : "12 ERAS MAPEADAS";
+}
+
+/** Aviso curto exibido no mapa logo depois da descoberta. */
+export const eraThirteenAppearedNote =
+  "UM REGISTRO NÃO CATALOGADO\nFOI ADICIONADO A ESTE MAPA.";
 
 /**
  * Respostas a cada tentativa de abrir a Era XIII, em ordem. A partir da

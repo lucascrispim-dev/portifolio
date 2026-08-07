@@ -7,9 +7,16 @@ const FEARLESSLY_CURIOUS = {
 };
 
 /**
- * Era II — quatro perguntas de memória, todas sobre coisas pequenas
- * demais para alguém ter anotado. É onde o jogo estabelece que ele
- * sabe mais sobre vocês dois do que deveria.
+ * Era II — Fearless.
+ *
+ * O sistema decidiu que isto aqui é uma **expedição**. Ele fala rápido,
+ * anuncia rotas, promete descobertas — e entrega perguntas sobre pizza.
+ * A distância entre o tom épico e o conteúdo doméstico é a piada da Era
+ * inteira.
+ *
+ * É também a Era em que o inventário se explica sozinho: cada memória
+ * confirmada vira um objeto. Toy Story vira um controle, Villa-Lobos
+ * vira uma folha, pizza vira pizza. O sistema nunca diz por quê.
  */
 export const era2: EraDefinition = {
   id: 2,
@@ -34,6 +41,28 @@ export const era2: EraDefinition = {
       cta: "CONTINUAR",
     },
     {
+      // A escolha inútil canônica: três rotas, um destino. O sistema
+      // apresenta o mapa com toda a seriedade e depois admite.
+      kind: "quiz",
+      id: "era2-rota",
+      prompt: [
+        { text: "Escolha a rota\nda expedição.", pause: "short" },
+        { text: "Escolha com cuidado.", pause: "short" },
+      ],
+      options: [
+        { id: "norte", label: "Rota Norte — mais rápida." },
+        { id: "sul", label: "Rota Sul — mais segura." },
+        { id: "leste", label: "Rota Leste — mais bonita." },
+        { id: "nenhuma", label: "Prefiro ficar em casa." },
+      ],
+      anyAnswerAccepted: true,
+      onCorrect: [
+        { text: "Excelente escolha.", pause: "short" },
+        { text: "As três rotas\nlevavam ao mesmo lugar.", pause: "short" },
+        { text: "A quarta também.", pause: "long" },
+      ],
+    },
+    {
       kind: "quiz",
       id: "era2-filme",
       prompt: [{ text: "Qual filme marcou\na história de vocês?" }],
@@ -50,6 +79,9 @@ export const era2: EraDefinition = {
         { text: "Mas o sistema\ngostou da referência.", pause: "long" },
       ],
     },
+    // A garra do Toy Story. O prêmio é o item, e ele só vem quando o
+    // sistema desiste de deixar o jogador tentar.
+    { kind: "minigame", id: "era2-garra", game: "clawMachine" },
     {
       kind: "quiz",
       id: "era2-villa-lobos",
@@ -67,6 +99,7 @@ export const era2: EraDefinition = {
         { text: "Um dos melhores dias\nregistrados neste sistema.", pause: "long" },
       ],
     },
+    { kind: "item", id: "era2-folha", itemId: "folha-villa-lobos" },
     {
       kind: "quiz",
       id: "era2-pizza",
@@ -87,6 +120,14 @@ export const era2: EraDefinition = {
         { text: "Conquista liberada\npor mérito questionável.", pause: "long" },
       ],
       achievement: FEARLESSLY_CURIOUS,
+    },
+    { kind: "item", id: "era2-pizza-item", itemId: "fatia-de-pizza" },
+    {
+      // A primeira falha roteirizada do jogo. Chega sem aviso, resolve-se
+      // sozinha e ensina que "quebrar" é coisa que este sistema faz.
+      kind: "interrupt",
+      id: "era2-reconectando",
+      error: "reconectando",
     },
     {
       kind: "quiz",
@@ -111,6 +152,7 @@ export const era2: EraDefinition = {
         { text: "Você presta.", pause: "long" },
       ],
     },
+    { kind: "file", id: "era2-arquivo", fileId: "arquivo-004" },
     { kind: "minigame", id: "era2-love-story", game: "loveStory" },
     {
       kind: "eraOutro",
@@ -121,7 +163,7 @@ export const era2: EraDefinition = {
       recalculatedLines: [
         { text: "Houve um engano.", pause: "short" },
         { text: "Não era 73%.", pause: "long" },
-        { text: "A Era XIII\ncontinua muito longe.", pause: "long" },
+        { text: "Você tem muito\nmais chão\ndo que imagina.", pause: "long" },
       ],
       lines: [{ text: "Progresso atualizado.", pause: "short" }],
       cta: "PRÓXIMA ERA",

@@ -11,10 +11,23 @@ const MIJAO: EraDefinition["achievements"][number] = {
   title: "MIJÃO",
 };
 
+const HABILITACAO: EraDefinition["achievements"][number] = {
+  id: "habilitacao-emocional",
+  title: "HABILITAÇÃO EMOCIONAL",
+};
+
 /**
- * Era IV — a primeira depois do falso reset. O narrador finge que nada
- * aconteceu, e a Era inteira se passa na Augusta: perguntas sobre a rua
- * e um banheiro que não existe.
+ * Era IV — Red.
+ *
+ * A Era **instável**. A tela treme sozinha, os avisos se contradizem e
+ * as falhas roteirizadas chegam sem pedir licença — é a única Era em que
+ * o sistema não consegue manter a compostura por dois minutos seguidos.
+ *
+ * É também a primeira depois do falso reset, e o narrador finge que nada
+ * aconteceu com uma insistência suspeita. Tudo se passa na Augusta:
+ * perguntas sobre a rua, um banheiro que não existe e um exame de
+ * habilitação emocional que reprova o candidato em todas as questões e
+ * emite a carteira assim mesmo.
  */
 export const era4: EraDefinition = {
   id: 4,
@@ -22,7 +35,7 @@ export const era4: EraDefinition = {
   title: "Red",
   album: "Red",
   theme: eraThemes[4],
-  achievements: [CONFIDENTIAL, MIJAO],
+  achievements: [CONFIDENTIAL, MIJAO, HABILITACAO],
   screens: [
     {
       kind: "titleCard",
@@ -49,6 +62,17 @@ export const era4: EraDefinition = {
       cta: "CONTINUAR",
     },
     {
+      // O sistema insiste que está tudo bem e imediatamente exibe sete
+      // registros ilegíveis. Ninguém aqui está convencendo ninguém.
+      kind: "interrupt",
+      id: "era4-corrompidos",
+      error: "dados-corrompidos",
+      lines: [
+        { text: "E, para constar,", pause: "short" },
+        { text: "isso não tem nenhuma\nrelação com o que\nnão aconteceu antes.", pause: "long" },
+      ],
+    },
+    {
       kind: "quiz",
       id: "era4-augusta",
       prompt: [{ text: "Qual rua tem\na maior densidade\nde histórias de vocês\npor metro quadrado?" }],
@@ -68,6 +92,7 @@ export const era4: EraDefinition = {
         { text: "Por decisão do sistema.", pause: "long" },
       ],
     },
+    { kind: "item", id: "era4-pedra", itemId: "pedra-da-augusta" },
     {
       kind: "quiz",
       id: "era4-linha",
@@ -87,6 +112,11 @@ export const era4: EraDefinition = {
       achievement: CONFIDENTIAL,
     },
     { kind: "minigame", id: "era4-banheiro", game: "bathroomMaze" },
+    { kind: "item", id: "era4-mapa-banheiros", itemId: "mapa-dos-banheiros" },
+    { kind: "file", id: "era4-arquivo", fileId: "arquivo-011" },
+    // O exame de habilitação emocional — a Era do término encontra a
+    // Olivia Rodrigo pelo único caminho possível: a carteira de motorista.
+    { kind: "minigame", id: "era4-exame", game: "drivingTest" },
     {
       kind: "compatibility",
       id: "era4-compatibilidade",

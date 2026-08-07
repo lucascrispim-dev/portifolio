@@ -8,9 +8,19 @@ const ENCHANTED = {
 };
 
 /**
- * Era III — as perguntas ficam sinceras e a Era termina em desastre. É
- * aqui que o jogo entrega o celular para o Lucas escolher algo em
- * segredo e, logo depois, finge perder tudo (ERRO 13).
+ * Era III — Speak Now.
+ *
+ * O sistema **fala demais**. Essa é a personalidade da Era, e ela existe
+ * por um motivo estrutural: é aqui que a Era XIII entra no jogo, e ela
+ * precisa entrar por acidente.
+ *
+ * A sequência é deliberada. Primeiro as perguntas ficam sinceras e o
+ * narrador começa a comentar coisas que não lhe foram pedidas. Então ele
+ * se trai, censura a frase tarde demais e manda o jogador ignorar. Logo
+ * depois, o mapa — que até agora tinha doze Eras — ganha um décimo
+ * terceiro cartão classificado, sem uma palavra de explicação.
+ *
+ * E aí a Era não termina: ela quebra (ERRO 13).
  */
 export const era3: EraDefinition = {
   id: 3,
@@ -50,6 +60,11 @@ export const era3: EraDefinition = {
         { text: "Mas vai ver.", pause: "long" },
       ],
     },
+    // O vazamento. É o único lugar do jogo em que a Era XIII é revelada.
+    { kind: "leak", id: "era3-vazamento" },
+    // E o mapa logo em seguida, para ele conferir com os próprios olhos
+    // que apareceu uma linha que não estava lá.
+    { kind: "progressMap", id: "era3-mapa", cta: "FECHAR O MAPA" },
     {
       kind: "openQuestion",
       id: "era3-percebeu",
@@ -64,6 +79,14 @@ export const era3: EraDefinition = {
         { text: "Minhas anotações\ndizem outra data.", pause: "short" },
         { text: "Mas eu não discuto\ncom testemunha ocular.", pause: "long" },
       ],
+    },
+    {
+      // O sistema trava justamente na resposta mais sincera da Era. A
+      // desculpa que ele dá — "resposta boa demais" — é o elogio mais
+      // desajeitado que ele consegue fazer.
+      kind: "interrupt",
+      id: "era3-erro-08",
+      error: "erro-08",
     },
     {
       kind: "quiz",

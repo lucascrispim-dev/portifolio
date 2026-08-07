@@ -3,10 +3,17 @@ import { projectConfig } from "@/config/project";
 import type { EraDefinition } from "@/types/game";
 
 /**
- * A Era VII não pode parecer o final. É a mais leve e colorida do jogo —
- * sem despedidas, sem preparação para o pedido, sem falar em decisão
- * final. O único conteúdo pesado é um minijogo em que quatro anéis se
- * recusam a colaborar.
+ * Era VII — Lover.
+ *
+ * O sistema fica **gentil**. Elogia, se preocupa, oferece ajuda, promete
+ * pegar leve — e continua exatamente tão sabotador quanto antes, só que
+ * sorrindo. O modo se chama "SIMPÁTICO*", e o asterisco nunca é
+ * explicado até a Era decidir explicá-lo.
+ *
+ * Estruturalmente, a Era VII não pode parecer o final. É a mais leve e
+ * colorida do jogo — sem despedidas, sem preparação para o pedido, sem
+ * falar em decisão final. O único conteúdo pesado é um minijogo em que
+ * quatro anéis se recusam a colaborar.
  */
 export const era7: EraDefinition = {
   id: 7,
@@ -76,6 +83,29 @@ export const era7: EraDefinition = {
       ],
     },
     {
+      // O modo simpático em ação: um elogio sincero, entregue e retirado
+      // dentro da mesma tela.
+      kind: "quiz",
+      id: "era7-elogio",
+      prompt: [
+        { text: "Hoje eu queria\nte elogiar de verdade.", pause: "short" },
+        { text: "Escolha o elogio\nque você prefere ouvir.", pause: "short" },
+      ],
+      options: [
+        { id: "engracado", label: "Que eu sou engraçado." },
+        { id: "bonito", label: "Que eu sou bonito." },
+        { id: "inteligente", label: "Que eu sou inteligente." },
+        { id: "paciente", label: "Que eu sou paciente." },
+      ],
+      anyAnswerAccepted: true,
+      onCorrect: [
+        { text: "Ótima escolha.", pause: "short" },
+        { text: "É verdade,\naliás.", pause: "short" },
+        { text: "Todas eram.", pause: "long" },
+        { text: "Menos a última.", pause: "long" },
+      ],
+    },
+    {
       kind: "quiz",
       id: "era7-provavel",
       prompt: [{ text: "Qual destas situações\né mais provável?" }],
@@ -91,6 +121,19 @@ export const era7: EraDefinition = {
       onCorrect: [{ text: "I Think He Knows.", pause: "long" }],
     },
     { kind: "minigame", id: "era7-paper-rings", game: "paperRings" },
+    { kind: "item", id: "era7-anel", itemId: "anel-de-papel" },
+    { kind: "file", id: "era7-arquivo", fileId: "arquivo-022" },
+    {
+      // O asterisco cobra a fatura: o sistema declara o jogador
+      // incompatível com uma pessoa razoável e segue em frente.
+      kind: "interrupt",
+      id: "era7-erro-22",
+      error: "erro-22",
+      lines: [
+        { text: "Isso não afeta\no modo simpático.", pause: "short" },
+        { text: "O modo simpático\nnunca existiu.", pause: "long" },
+      ],
+    },
     {
       kind: "eraOutro",
       id: "era7-outro",

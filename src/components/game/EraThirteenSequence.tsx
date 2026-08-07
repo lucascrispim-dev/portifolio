@@ -107,6 +107,7 @@ export function EraThirteenSequence({ onDone }: { onDone: () => void }) {
             { text: "Requisito identificado:", pause: "short" },
             { text: "UMA RESPOSTA", pause: "long" },
           ]}
+          readingPace
           onDone={() => setStep("preparing")}
           lineClassName="whitespace-pre-line font-mono text-[15px] tracking-[0.15em]"
         />
@@ -134,6 +135,7 @@ export function EraThirteenSequence({ onDone }: { onDone: () => void }) {
       {step === "explain" ? (
         <NarratorText
           lines={eraThirteenAttempt}
+          readingPace
           onDone={() => setStep("transfer")}
           lineClassName="whitespace-pre-line text-[16px] leading-relaxed"
         />

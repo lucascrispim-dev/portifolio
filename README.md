@@ -1,6 +1,8 @@
 # PROJECT: NEXT ERA
 
-Uma experiência web narrativa, mobile-first, jogada de uma sentada (30 a 40 minutos). O jogo aparenta ter **13 Eras**, mas só as oito primeiras existem — e o sistema que as apresenta passa a noite inteira sabotando o próprio jogador: mente sobre o progresso, mede a paciência dele, recusa o nome dele e, depois da Era III, finge corromper os dados e reiniciar do zero. Depois da folklore o narrador se dissolve, o texto vira primeira pessoa e o controle passa para o Lucas. **O pedido não acontece no site.**
+Uma experiência web narrativa, mobile-first, jogada de uma sentada (35 a 45 minutos). O jogo aparenta ter **13 Eras**, mas só as oito primeiras existem — e o sistema que as apresenta passa a noite inteira sabotando o próprio jogador: mente sobre o progresso, mede a paciência dele, recusa o nome dele, quebra de propósito e, depois da Era III, finge corromper os dados e reiniciar do zero. Depois da folklore o narrador se dissolve, o texto vira primeira pessoa e o controle passa para o Lucas. **O pedido não acontece no site.**
+
+O objetivo declarado é que o jogador termine pensando *"eu nunca fazia ideia do que aquele site faria nos próximos 30 segundos"*. Tudo abaixo existe a serviço disso.
 
 > **Fonte de verdade:** [`docs/roteiro/DIRECAO-DEFINITIVA.md`](docs/roteiro/DIRECAO-DEFINITIVA.md). Os arquivos `ERA * .md` e `NOVO-FLUXO-13-ERAS.md` ao lado dele documentam roteiros anteriores e ficam preservados como histórico — o código em `src/content/*.ts` deriva da direção definitiva.
 
@@ -14,7 +16,7 @@ Sem backend, sem banco de dados. Não há cronômetro, senha, localização, pai
 
 Até o jogador tocar em **ENCERRAR**, tudo na tela sustenta que a história continua depois:
 
-- o mapa lista 13 Eras, com as Eras IX a XII já nomeadas com os álbuns seguintes (evermore, Midnights, The Tortured Poets Department, The Life of a Showgirl) e a XIII em **CLASSIFICADO**, pulsando;
+- o mapa abre listando **doze** Eras, com as Eras IX a XII já nomeadas com os álbuns seguintes (evermore, Midnights, The Tortured Poets Department, The Life of a Showgirl). A décima terceira **não existe até a Era III**, quando o narrador deixa escapar que ela existe e se censura tarde demais — só então o cartão **CLASSIFICADO** aparece no mapa, pulsando;
 - a compatibilidade sobe em múltiplos de 13 e **sempre trava em 99%**, com o 1% restante atribuído à Era XIII;
 - o progresso exibido é declarado pelo conteúdo, não calculado: ele sobe, "recalcula" e **desce** (73% → 18%, 91% → 89%);
 - a Era VI oferece "VER RESPOSTA DE LUCAS" e responde ACESSO NEGADO, disponível na Era XIII;
@@ -23,6 +25,31 @@ Até o jogador tocar em **ENCERRAR**, tudo na tela sustenta que a história cont
 O 100% aparece uma única vez no jogo inteiro: depois do "sim", na continuação que só o Lucas dispara.
 
 Se alguma dessas peças for enfraquecida, a surpresa deixa de funcionar. `tests/era-catalog.test.ts` e `tests/game-machine.test.ts` protegem as mais frágeis.
+
+### Cada Era é um sistema diferente
+
+O maior risco do projeto era as oito Eras virarem a mesma Era pintada de oito cores. `src/config/personalities.ts` resolve isso mudando o **comportamento** do sistema, não a paleta: a velocidade com que o narrador digita, o rótulo de status no topo, as notificações que chegam sozinhas e os efeitos próprios de cada Era.
+
+| Era | Como o sistema se comporta |
+|---|---|
+| I — Debut | Curioso. Monta um perfil do jogador, erra quase todos os campos e não corrige nenhum. |
+| II — Fearless | Afobado. Digita mais rápido que qualquer outra Era, anuncia uma expedição e oferece três rotas que levam ao mesmo lugar. |
+| III — Speak Now | Falante demais. Comenta o que não foi perguntado e acaba vazando a existência da Era XIII. |
+| IV — Red | Instável. A tela treme sozinha em intervalos irregulares e as falhas roteirizadas se acumulam. |
+| V — 1989 | Recém-atualizado. Instala a "versão 2.0" no meio do jogo, publica notas de versão e continua idêntico. |
+| VI — reputation | Seco. Escreve em minúsculas, abre um processo formal contra o jogador e o condena em todas as acusações. |
+| VII — Lover | Simpático\*. Elogia, se preocupa, promete pegar leve — e o asterisco cobra a fatura no fim da Era. |
+| VIII — folklore | Silencioso. Digita quase parando, quase não notifica, e pede treze segundos de imobilidade sem provocar uma única vez. |
+
+### Sistemas paralelos
+
+Rodando o tempo todo, por baixo das Eras — todos acessíveis pelo menu, nenhum deles alterando o jogo:
+
+- **Inventário.** Onze objetos coletados ao longo das Eras, cada um apresentado com moldura, nome em caixa alta e laudo técnico. Nenhum tem função, e o menu responde a quem for conferir: *"Utilidade: a ser determinada."* O significado só aparece na última tela, depois do "sim".
+- **Arquivos secretos.** Anotações internas do sistema sobre o jogador e sobre o Lucas. A numeração pula de propósito, e o `ARQUIVO 013` fica visível na lista desde o começo sem nunca abrir.
+- **Falhas.** ERRO 08, ERRO 22, DADOS CORROMPIDOS, RECONECTANDO, VERSÃO INCOMPATÍVEL — cada uma posicionada numa Era específica, sem nada para o jogador fazer além de assistir. É a repetição delas que dá ao ERRO 13 chance real de enganar.
+- **Notificações.** Uma fila só, empilhada, alimentada pelos eventos ambientes de cada Era, pelos easter eggs e pelos avisos do sistema. É o que faz o jogo parecer sempre ocupado com alguma coisa enquanto o jogador só lê.
+- **Estatísticas.** Tempo de sessão, toques, perguntas respondidas, falhas presenciadas, acessos negados — e, no rodapé, "Mentiras contadas: 0".
 
 ### O falso reset
 
@@ -81,7 +108,7 @@ O segundo caminho só existe depois do NAMORADOS — quando não há mais nada a
 ```bash
 npm run lint        # ESLint
 npm run typecheck   # tsc --noEmit
-npm run test         # Vitest — testa a máquina de estados e a lógica do botão "Não"
+npm run test        # Vitest — máquina de estados, catálogo, sistemas paralelos e Era XIII
 npm run test:watch  # Vitest em modo watch
 ```
 
@@ -107,9 +134,20 @@ export const projectConfig = {
 };
 ```
 
-O mesmo arquivo tem `observationLines`, um espaço central para novas falas de observação do narrador, sem tocar em nenhum componente. O texto do final — a sua declaração — fica isolado em [`src/content/final-script.ts`](src/content/final-script.ts), que é a única parte pensada para você reescrever com calma.
+O mesmo arquivo tem `observationLines`: as falas que o narrador solta sozinho a cada 39 toques, para lembrar o jogador de que tem alguém prestando atenção. Acrescentar uma frase ali basta — nenhum componente precisa ser tocado.
 
-As cores/tipografia/textura de cada Era estão em [`src/config/themes.ts`](src/config/themes.ts).
+O texto do final — a sua declaração — fica isolado em [`src/content/final-script.ts`](src/content/final-script.ts), que é a única parte pensada para você reescrever com calma.
+
+Onde mexer em cada coisa:
+
+| O quê | Arquivo |
+|---|---|
+| Cores, tipografia e textura de cada Era | [`src/config/themes.ts`](src/config/themes.ts) |
+| Comportamento do sistema em cada Era (ritmo, rótulo, notificações) | [`src/config/personalities.ts`](src/config/personalities.ts) |
+| Itens do inventário e seus laudos inúteis | [`src/content/inventory.ts`](src/content/inventory.ts) |
+| Arquivos secretos | [`src/content/secret-files.ts`](src/content/secret-files.ts) |
+| Falhas roteirizadas do sistema | [`src/content/system-errors.ts`](src/content/system-errors.ts) |
+| Telas de cada Era | `src/content/era-1.ts` … `era-8.ts` |
 
 ## Modo de desenvolvimento
 
@@ -120,7 +158,7 @@ Desligado por padrão. Para ativar localmente (nunca em produção):
 NEXT_PUBLIC_ENABLE_DEV_TOOLS=true
 ```
 
-Com a flag ativa, um botão **DEV** aparece no canto inferior direito, permitindo pular para qualquer Era, limpar o progresso, mover a etapa do falso reset e forçar cada etapa da sequência final. O atalho **Ensaiar "Olha para ele."** existe por um motivo prático: o toque longo que destrava o final precisa ser treinado sem jogar as oito Eras antes. Confirme que `NEXT_PUBLIC_ENABLE_DEV_TOOLS` **não** está definida (ou está `false`) antes de publicar.
+Com a flag ativa, um botão **DEV** aparece no canto inferior direito, permitindo pular para qualquer Era, limpar o progresso, mover a etapa do falso reset, revelar a Era XIII no mapa sem passar pelo vazamento da Era III e forçar cada etapa da sequência final. O atalho **Ensaiar "Olha para ele."** existe por um motivo prático: o toque longo que destrava o final precisa ser treinado sem jogar as oito Eras antes. Confirme que `NEXT_PUBLIC_ENABLE_DEV_TOOLS` **não** está definida (ou está `false`) antes de publicar.
 
 ## Arquitetura
 
@@ -132,15 +170,19 @@ docs/roteiro/
 src/
   app/                   page.tsx, layout.tsx (fontes + comentário escondido), globals.css
   components/game/       Telas e componentes; minigames/ tem os minijogos
-  content/               Conteúdo tipado das 8 Eras + catálogo das 13
-  config/                projectConfig + temas por Era
-  hooks/                 useGameProgress (estado + persistência), useReducedMotion
+  content/               Conteúdo tipado das 8 Eras + catálogo das 13, inventário,
+                         arquivos secretos e falhas do sistema
+  config/                projectConfig, temas por Era e personalities.ts (comportamento por Era)
+  hooks/                 useGameProgress (estado + persistência), useSessionStats, useReducedMotion
   lib/                   storage.ts, game-machine.ts (reducer puro), no-button.ts, patience.ts, audio.ts
   types/                 Tipos centrais (GameProgress, EraDefinition, EraScreen, ...)
-tests/                   Máquina de estados, catálogo das Eras e botão "Não"
+tests/                   Máquina de estados, catálogo das Eras, botão "Não",
+                         sistemas paralelos e a descoberta da Era XIII
 ```
 
 A máquina de estados (`src/lib/game-machine.ts`) é um reducer puro e testável. Cada Era avança por cenas (`ERA_SCENE_ADVANCE`) e, ao terminar a última, `ERA_COMPLETE` libera a seguinte imediatamente. Só as Eras 1 a 8 têm conteúdo; as 9 a 13 vivem apenas em `src/content/era-catalog.ts` e nunca saem de `locked`.
+
+`ERA_SCENE_ADVANCE` exige declarar de qual cena se está saindo (`fromScene`) e nunca passa da última. Isso não é zelo abstrato: sem o primeiro guarda, dois toques rápidos no mesmo "CONTINUAR" avançavam duas cenas — o botão da tela que está saindo continua clicável durante a animação — e o jogador perdia um item, um arquivo ou uma pergunta inteira sem nunca ver a tela; sem o segundo, um avanço a mais deixava uma tela em branco sem saída. O jogo provoca o jogador por clicar rápido demais, então é exatamente isso que ele faz.
 
 A sequência final é guardada em `finalStage` (`playing` → `confession` → `eraXiii` → `transferring` → `lookAtHim` → `answered`) e **persistida**. O reducer recusa retrocessos: recarregar a página depois do ENCERRAR não devolve o jogador ao jogo nem repete a confissão. Só `DEV_SET_FINAL_STAGE`, do painel de desenvolvimento, move a etapa livremente — é o que permite ensaiar.
 
