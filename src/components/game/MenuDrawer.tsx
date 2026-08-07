@@ -133,7 +133,13 @@ export function MenuDrawer({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-4 top-full z-50 w-72 overflow-hidden"
+            /*
+              Acima da fila de notificações (z-60). Abrir o menu é uma
+              ação deliberada do jogador; as notificações chegam sozinhas.
+              Quando as duas coincidem, quem mandou abrir ganha — do
+              contrário um aviso ambiente cobre justo a linha de abas.
+            */
+            className="absolute right-4 top-full z-[70] w-72 overflow-hidden"
             style={{
               backgroundColor: `${theme.background}f7`,
               border: `1px solid ${theme.foreground}33`,
