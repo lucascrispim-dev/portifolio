@@ -28,6 +28,9 @@ export function HandToLucas({
   const theme = useEraTheme();
   const reducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<Phase>("handOver");
+  const [handOverDone, setHandOverDone] = useState(false);
+  const [handBackDone, setHandBackDone] = useState(false);
+  const [resultRevealed, setResultRevealed] = useState(false);
 
   function choose(option: string) {
     playEffect("tap");
@@ -47,10 +50,13 @@ export function HandToLucas({
                 pause: "long",
               },
             ]}
+            onDone={() => setHandOverDone(true)}
           />
-          <ChoiceButton onClick={() => setPhase("lucasChoosing")}>
-            ENTREGUEI
-          </ChoiceButton>
+          {handOverDone ? (
+            <ChoiceButton onClick={() => setPhase("lucasChoosing")}>
+              ENTREGUEI
+            </ChoiceButton>
+          ) : null}
         </div>
       ) : null}
 
@@ -91,10 +97,13 @@ export function HandToLucas({
         <div className="flex flex-col gap-6">
           <NarratorText
             lines={[{ text: "Pode devolver o celular.", pause: "long" }]}
+            onDone={() => setHandBackDone(true)}
           />
-          <ChoiceButton onClick={() => setPhase("result")}>
-            DEVOLVIDO
-          </ChoiceButton>
+          {handBackDone ? (
+            <ChoiceButton onClick={() => setPhase("result")}>
+              DEVOLVIDO
+            </ChoiceButton>
+          ) : null}
         </div>
       ) : null}
 
@@ -105,14 +114,19 @@ export function HandToLucas({
               { text: `${projectConfig.playerOneName} respondeu.`, pause: "short" },
               { text: "Resultado:", pause: "long" },
             ]}
+            onDone={() => setResultRevealed(true)}
           />
-          <p
-            className="font-mono text-xl tracking-[0.25em]"
-            style={{ color: theme.accent }}
-          >
-            CLASSIFICADO.
-          </p>
-          <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          {resultRevealed ? (
+            <>
+              <p
+                className="font-mono text-xl tracking-[0.25em]"
+                style={{ color: theme.accent }}
+              >
+                CLASSIFICADO.
+              </p>
+              <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>

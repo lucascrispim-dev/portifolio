@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ERA_XIII_SECRET_TAP,
   eraCatalog,
+  eraThirteenCard,
   eraThirteenSecretResponse,
   eraThirteenTapResponses,
   lockedEraMessage,
@@ -33,8 +34,19 @@ describe("catálogo das 13 Eras", () => {
 
   it("a Era XIII é a única nomeada e nunca é jogável", () => {
     const thirteen = eraCatalog.find((e) => e.id === 13);
-    expect(thirteen?.title).toBe("THE NEXT CHAPTER");
+    expect(thirteen?.title).toBe("THE NEXT ERA");
     expect(thirteen?.playable).toBe(false);
+  });
+
+  /**
+   * O nome precisa ser o mesmo no mapa (visto a noite inteira) e no
+   * cartão exibido quando a Era XIII finalmente "abre" — um nome
+   * diferente ali quebraria a continuidade que o jogo passou horas
+   * construindo.
+   */
+  it("o nome da Era XIII é o mesmo no mapa e no cartão", () => {
+    const thirteen = eraCatalog.find((e) => e.id === 13);
+    expect(eraThirteenCard.title).toBe(thirteen?.title);
   });
 
   it("toda Era jogável do catálogo tem conteúdo de verdade", () => {

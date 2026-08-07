@@ -49,6 +49,7 @@ export function EnchantedStars({
   const [touched, setTouched] = useState<number[]>([]);
   const [dodges, setDodges] = useState(0);
   const [lastCaught, setLastCaught] = useState(false);
+  const [responseDone, setResponseDone] = useState(false);
 
   const allButLast = touched.length >= SPOTS.length;
   const taunted = dodges >= 2;
@@ -134,9 +135,16 @@ export function EnchantedStars({
         </div>
       ) : (
         <div className="flex flex-1 flex-col justify-center gap-5">
-          <NarratorText lines={[{ text: "13 / 13", pause: "short" }]} />
-          <AchievementCard achievement={ENCHANTED} onUnlock={onAchievement} />
-          <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          <NarratorText
+            lines={[{ text: "13 / 13", pause: "short" }]}
+            onDone={() => setResponseDone(true)}
+          />
+          {responseDone ? (
+            <>
+              <AchievementCard achievement={ENCHANTED} onUnlock={onAchievement} />
+              <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+            </>
+          ) : null}
         </div>
       )}
     </div>

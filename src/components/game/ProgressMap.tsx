@@ -119,7 +119,7 @@ export function ProgressMap({
       <motion.button
         type="button"
         onClick={handleEraXiiiTap}
-        aria-label="Era 13 — THE NEXT CHAPTER (classificado)"
+        aria-label="Era 13 — THE NEXT ERA (classificado)"
         initial={reducedMotion ? false : { opacity: 0, y: 6 }}
         animate={
           reducedMotion

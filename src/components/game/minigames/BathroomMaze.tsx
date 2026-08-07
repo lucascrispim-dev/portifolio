@@ -40,6 +40,7 @@ export function BathroomMaze({
   const [tried, setTried] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [found, setFound] = useState(false);
+  const [responseDone, setResponseDone] = useState(false);
 
   function tryDoor(door: (typeof DOORS)[number]) {
     if (found) return;
@@ -49,7 +50,11 @@ export function BathroomMaze({
       return;
     }
     playEffect("escape");
-    if (tried.length === 1) onPatienceDrop();
+    // `tried` é deduplicado: reclicar uma porta já recusada não a
+    // adiciona de novo, então checar o tamanho ANTES de adicionar (e
+    // nunca depois) é o que garante que isto dispare uma única vez,
+    // mesmo que o jogador insista na mesma porta repetidamente.
+    if (tried.length === 0) onPatienceDrop();
     setTried((t) => (t.includes(door.name) ? t : [...t, door.name]));
     setMessage(door.refusal);
   }
@@ -67,9 +72,14 @@ export function BathroomMaze({
           lines={[
             { text: "Agora você entende\no sofrimento do Lucas.", pause: "long" },
           ]}
+          onDone={() => setResponseDone(true)}
         />
-        <AchievementCard achievement={MIJAO} onUnlock={onAchievement} />
-        <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+        {responseDone ? (
+          <>
+            <AchievementCard achievement={MIJAO} onUnlock={onAchievement} />
+            <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          </>
+        ) : null}
       </div>
     );
   }

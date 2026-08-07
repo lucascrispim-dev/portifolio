@@ -144,6 +144,7 @@ function TaylorMeter({ onDone }: { onDone: () => void }) {
 export function LoveStory({ onDone }: { onDone: () => void }) {
   const theme = useEraTheme();
   const [picked, setPicked] = useState<string[]>([]);
+  const [responseDone, setResponseDone] = useState(false);
   const joined = picked.length === 2;
 
   function pick(word: string) {
@@ -191,8 +192,11 @@ export function LoveStory({ onDone }: { onDone: () => void }) {
               { text: "Não se empolgue.", pause: "short" },
               { text: "Estamos apenas\nna Era II.", pause: "long" },
             ]}
+            onDone={() => setResponseDone(true)}
           />
-          <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          {responseDone ? (
+            <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          ) : null}
         </div>
       )}
     </div>

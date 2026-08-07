@@ -22,6 +22,7 @@ const PICKED_LESS: NarratorLine[] = [
 export function TrustScale({ onDone }: { onDone: () => void }) {
   const theme = useEraTheme();
   const [picked, setPicked] = useState<number | null>(null);
+  const [responseDone, setResponseDone] = useState(false);
 
   function choose(value: number) {
     if (picked !== null) return;
@@ -64,8 +65,13 @@ export function TrustScale({ onDone }: { onDone: () => void }) {
 
       {picked !== null ? (
         <div className="flex flex-col gap-5">
-          <NarratorText lines={picked === 13 ? PICKED_THIRTEEN : PICKED_LESS} />
-          <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          <NarratorText
+            lines={picked === 13 ? PICKED_THIRTEEN : PICKED_LESS}
+            onDone={() => setResponseDone(true)}
+          />
+          {responseDone ? (
+            <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          ) : null}
         </div>
       ) : null}
     </div>

@@ -90,6 +90,7 @@ export function WoodsLabyrinth({
   const [node, setNode] = useState<NodeId>("start");
   const [message, setMessage] = useState<string | null>(null);
   const [backtracks, setBacktracks] = useState(0);
+  const [responseDone, setResponseDone] = useState(false);
 
   const current = MAZE[node];
   const escaped = node === "exit";
@@ -116,9 +117,14 @@ export function WoodsLabyrinth({
             { text: "Are we out of the woods?", pause: "short" },
             { text: "Sim.", pause: "long" },
           ]}
+          onDone={() => setResponseDone(true)}
         />
-        <AchievementCard achievement={OUT_OF_THE_WOODS} onUnlock={onAchievement} />
-        <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+        {responseDone ? (
+          <>
+            <AchievementCard achievement={OUT_OF_THE_WOODS} onUnlock={onAchievement} />
+            <ChoiceButton onClick={onDone}>CONTINUAR</ChoiceButton>
+          </>
+        ) : null}
       </div>
     );
   }
