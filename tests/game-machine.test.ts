@@ -1,131 +1,102 @@
 import { describe, expect, it } from "vitest";
 import { transition } from "@/lib/game-machine";
 import { createInitialProgress } from "@/lib/storage";
+import { eraDefinitions } from "@/content/eras";
+import { PLAYABLE_ERA_IDS } from "@/types/game";
+import type { EraId, GameProgress, PlayableEraId } from "@/types/game";
 
-describe("game-machine: initial state", () => {
-  it("starts with only Era I available and every other Era locked", () => {
+/** Percorre todas as cenas de uma Era e a conclui. */
+function playEra(progress: GameProgress, era: PlayableEraId): GameProgress {
+  const total = eraDefinitions[era].screens.length;
+  let next = progress;
+  for (let i = 0; i < total; i++) {
+    next = transition(next, { type: "ERA_SCENE_ADVANCE", era });
+  }
+  return transition(next, { type: "ERA_COMPLETE", era });
+}
+
+const PHANTOM_ERAS: EraId[] = [9, 10, 11, 12, 13];
+
+describe("estado inicial", () => {
+  it("começa com a Era I disponível e todas as outras bloqueadas", () => {
     const progress = createInitialProgress();
     expect(progress.eraStatuses[1]).toBe("available");
-    for (const era of [2, 3, 4, 5, 6, 7, 8] as const) {
-      expect(progress.eraStatuses[era]).toBe("locked");
+    for (let era = 2; era <= 13; era++) {
+      expect(progress.eraStatuses[era as EraId]).toBe("locked");
     }
     expect(progress.currentEra).toBe(1);
-    expect(progress.introCompleted).toBe(false);
+    expect(progress.finalStage).toBe("playing");
+    expect(progress.schemaVersion).toBe(2);
   });
 });
 
-describe("game-machine: era gating (no skipping)", () => {
-  it("ignores ERA_SCENE_ADVANCE for a locked Era", () => {
-    const progress = createInitialProgress();
-    const next = transition(progress, { type: "ERA_SCENE_ADVANCE", era: 3 });
-    expect(next).toEqual(progress);
-    expect(next.eraStatuses[3]).toBe("locked");
-  });
-
-  it("advances scenes only for an available/active Era", () => {
-    const progress = createInitialProgress();
-    const next = transition(progress, { type: "ERA_SCENE_ADVANCE", era: 1 });
-    expect(next.eraStatuses[1]).toBe("active");
-    expect(next.eraSceneIndex[1]).toBe(1);
-  });
-
-  it("ignores ERA_COMPLETE for an Era that was never played", () => {
-    const progress = createInitialProgress();
-    const next = transition(progress, { type: "ERA_COMPLETE", era: 5 });
-    expect(next).toEqual(progress);
-  });
-});
-
-describe("game-machine: waiting_for_event gate", () => {
-  function toWaiting(eraId: 1 = 1) {
+describe("progressão contínua", () => {
+  it("concluir uma Era abre a próxima imediatamente", () => {
     let progress = createInitialProgress();
-    progress = transition(progress, { type: "ERA_SCENE_ADVANCE", era: eraId });
-    progress = transition(progress, { type: "ERA_ENTER_WAITING", era: eraId });
-    return progress;
-  }
-
-  it("enters waiting_for_event after the mission is accepted", () => {
-    const progress = toWaiting();
-    expect(progress.eraStatuses[1]).toBe("waiting_for_event");
-  });
-
-  it('answering "ainda não" keeps the Era pending', () => {
-    const waiting = toWaiting();
-    const next = transition(waiting, { type: "EVENT_NOT_YET", era: 1 });
-    expect(next.eraStatuses[1]).toBe("waiting_for_event");
-    expect(next.eraStatuses[2]).toBe("locked");
-  });
-
-  it('"talvez" and "dúvida" also keep the Era pending', () => {
-    const waiting = toWaiting();
-    expect(transition(waiting, { type: "EVENT_MAYBE", era: 1 }).eraStatuses[1]).toBe(
-      "waiting_for_event"
-    );
-    expect(transition(waiting, { type: "EVENT_DOUBT", era: 1 }).eraStatuses[1]).toBe(
-      "waiting_for_event"
-    );
-  });
-
-  it("confirming the event resumes the Era (not completed yet) and advances the scene", () => {
-    const waiting = toWaiting();
-    const sceneBefore = waiting.eraSceneIndex[1];
-    const next = transition(waiting, {
-      type: "EVENT_CONFIRMED",
-      era: 1,
-      badgeId: "begin-again",
-    });
-    expect(next.eraStatuses[1]).toBe("active");
-    expect(next.eraSceneIndex[1]).toBe(sceneBefore + 1);
-    expect(next.badges).toContain("begin-again");
-    // A próxima Era só é liberada quando a tela de encerramento é concluída.
-    expect(next.eraStatuses[2]).toBe("locked");
-  });
-
-  it("only unlocks the next Era once ERA_COMPLETE fires after the gate", () => {
-    let progress = toWaiting();
-    progress = transition(progress, { type: "EVENT_CONFIRMED", era: 1 });
-    progress = transition(progress, { type: "ERA_COMPLETE", era: 1 });
+    progress = playEra(progress, 1);
     expect(progress.eraStatuses[1]).toBe("completed");
     expect(progress.eraStatuses[2]).toBe("available");
     expect(progress.currentEra).toBe(2);
-    // Eras further ahead remain locked.
+    // Sem espera — mas também sem pular: a Era III segue trancada.
     expect(progress.eraStatuses[3]).toBe("locked");
   });
 
-  it("ignores EVENT_CONFIRMED when the Era isn't actually waiting", () => {
-    const progress = createInitialProgress();
-    const next = transition(progress, { type: "EVENT_CONFIRMED", era: 1 });
-    expect(next).toEqual(progress);
-  });
-
-  it("records the Era's narrative event on confirmation", () => {
-    const waiting = toWaiting();
-    expect(waiting.completedEvents).toEqual([]);
-    const next = transition(waiting, { type: "EVENT_CONFIRMED", era: 1 });
-    expect(next.completedEvents).toEqual(["NEW_MEMORY_CONFIRMED"]);
-  });
-
-  it("does not duplicate a narrative event if confirmation replays", () => {
-    let progress = toWaiting();
-    progress = transition(progress, { type: "EVENT_CONFIRMED", era: 1 });
-    // Volta para waiting e confirma de novo — o evento não deve duplicar.
-    progress = transition(progress, { type: "ERA_ENTER_WAITING", era: 1 });
-    progress = transition(progress, { type: "EVENT_CONFIRMED", era: 1 });
-    expect(progress.completedEvents).toEqual(["NEW_MEMORY_CONFIRMED"]);
-  });
-
-  it("records no narrative event for Eras without an event gate (VII, VIII)", () => {
+  it("percorre as 8 Eras jogáveis em sequência", () => {
     let progress = createInitialProgress();
-    progress = transition(progress, { type: "DEV_UNLOCK_ALL" });
-    progress = transition(progress, { type: "ERA_SCENE_ADVANCE", era: 7 });
-    progress = transition(progress, { type: "ERA_ENTER_WAITING", era: 7 });
-    progress = transition(progress, { type: "EVENT_CONFIRMED", era: 7 });
-    expect(progress.completedEvents).toEqual([]);
+    for (const era of PLAYABLE_ERA_IDS) {
+      expect(progress.currentEra).toBe(era);
+      progress = playEra(progress, era);
+    }
+    for (const era of PLAYABLE_ERA_IDS) {
+      expect(progress.eraStatuses[era]).toBe("completed");
+    }
+  });
+
+  it("ignora avanço de cena de uma Era trancada", () => {
+    const progress = createInitialProgress();
+    expect(transition(progress, { type: "ERA_SCENE_ADVANCE", era: 5 })).toEqual(
+      progress
+    );
+  });
+
+  it("ignora conclusão de uma Era que nunca foi jogada", () => {
+    const progress = createInitialProgress();
+    expect(transition(progress, { type: "ERA_COMPLETE", era: 6 })).toEqual(progress);
   });
 });
 
-describe("game-machine: no-button + terms", () => {
-  it("counts No-button attempts and marks it destroyed", () => {
+describe("as Eras IX a XIII nunca existem", () => {
+  it("permanecem trancadas mesmo depois de concluir a Era VIII", () => {
+    let progress = createInitialProgress();
+    for (const era of PLAYABLE_ERA_IDS) {
+      progress = playEra(progress, era);
+    }
+    for (const era of PHANTOM_ERAS) {
+      expect(progress.eraStatuses[era]).toBe("locked");
+    }
+  });
+
+  it("DEV_UNLOCK_ALL destrava só as Eras jogáveis", () => {
+    const next = transition(createInitialProgress(), { type: "DEV_UNLOCK_ALL" });
+    for (const era of PLAYABLE_ERA_IDS) {
+      expect(next.eraStatuses[era]).not.toBe("locked");
+    }
+    for (const era of PHANTOM_ERAS) {
+      expect(next.eraStatuses[era]).toBe("locked");
+    }
+  });
+
+  it("conta cada tentativa de abrir a Era XIII", () => {
+    let progress = createInitialProgress();
+    for (let i = 0; i < 5; i++) {
+      progress = transition(progress, { type: "ERA_XIII_TAP" });
+    }
+    expect(progress.eraXiiiTapCount).toBe(5);
+  });
+});
+
+describe("botão Não e termos", () => {
+  it("registra as oito tentativas e a destruição", () => {
     let progress = createInitialProgress();
     for (let i = 0; i < 8; i++) {
       progress = transition(progress, { type: "NO_BUTTON_ATTEMPT" });
@@ -135,27 +106,40 @@ describe("game-machine: no-button + terms", () => {
     expect(progress.noButtonDestroyed).toBe(true);
   });
 
-  it("accepting terms completes the introduction", () => {
-    const progress = createInitialProgress();
-    const next = transition(progress, { type: "TERMS_ACCEPTED" });
+  it("aceitar os termos conclui a introdução", () => {
+    const next = transition(createInitialProgress(), { type: "TERMS_ACCEPTED" });
     expect(next.termsAccepted).toBe(true);
     expect(next.introCompleted).toBe(true);
   });
 });
 
-describe("game-machine: dev tools", () => {
-  it("DEV_RESET returns a fresh initial state", () => {
+describe("coleta", () => {
+  it("não duplica achievements nem easter eggs", () => {
     let progress = createInitialProgress();
-    progress = transition(progress, { type: "ERA_SCENE_ADVANCE", era: 1 });
-    progress = transition(progress, { type: "DEV_RESET" });
-    expect(progress).toEqual(createInitialProgress());
+    progress = transition(progress, { type: "ADD_ACHIEVEMENT", achievementId: "clean" });
+    progress = transition(progress, { type: "ADD_ACHIEVEMENT", achievementId: "clean" });
+    progress = transition(progress, { type: "ADD_EASTER_EGG", id: "the-1" });
+    progress = transition(progress, { type: "ADD_EASTER_EGG", id: "the-1" });
+    expect(progress.achievements).toEqual(["clean"]);
+    expect(progress.easterEggs).toEqual(["the-1"]);
   });
 
-  it("DEV_UNLOCK_ALL unlocks every locked Era", () => {
-    const progress = createInitialProgress();
-    const next = transition(progress, { type: "DEV_UNLOCK_ALL" });
-    for (const era of [1, 2, 3, 4, 5, 6, 7, 8] as const) {
-      expect(next.eraStatuses[era]).not.toBe("locked");
-    }
+  it("guarda o texto do Blank Space para reaparecer depois", () => {
+    const next = transition(createInitialProgress(), {
+      type: "SET_BLANK_SPACE",
+      text: "qualquer coisa",
+    });
+    expect(next.blankSpaceAnswer).toBe("qualquer coisa");
+  });
+});
+
+describe("sequência final", () => {
+  it("avança de playing até final", () => {
+    let progress = createInitialProgress();
+    progress = transition(progress, { type: "SET_FINAL_STAGE", stage: "interrupted" });
+    expect(progress.finalStage).toBe("interrupted");
+    progress = transition(progress, { type: "SET_FINAL_STAGE", stage: "transferring" });
+    progress = transition(progress, { type: "SET_FINAL_STAGE", stage: "final" });
+    expect(progress.finalStage).toBe("final");
   });
 });

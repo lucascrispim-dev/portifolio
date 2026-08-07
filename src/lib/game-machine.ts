@@ -1,39 +1,39 @@
-import { ERA_IDS } from "@/types/game";
-import type { EraId, EraStatus, GameProgress } from "@/types/game";
+import { PLAYABLE_ERA_IDS, LAST_PLAYABLE_ERA } from "@/types/game";
+import type {
+  EraId,
+  EraStatus,
+  FinalStage,
+  GameProgress,
+  PlayableEraId,
+} from "@/types/game";
 import { createInitialProgress } from "@/lib/storage";
-import { eraCompletionEvent } from "@/lib/events";
 
 export type GameAction =
   | { type: "HYDRATE"; progress: GameProgress }
   | { type: "NO_BUTTON_ATTEMPT" }
   | { type: "NO_BUTTON_DESTROYED" }
   | { type: "TERMS_ACCEPTED" }
-  | { type: "ERA_SCENE_ADVANCE"; era: EraId }
-  | { type: "ERA_ENTER_WAITING"; era: EraId }
-  | { type: "EVENT_NOT_YET"; era: EraId }
-  | { type: "EVENT_MAYBE"; era: EraId }
-  | { type: "EVENT_DOUBT"; era: EraId }
-  | { type: "EVENT_CONFIRMED"; era: EraId; badgeId?: string }
-  | { type: "ERA_COMPLETE"; era: EraId }
-  | { type: "ADD_BADGE"; badgeId: string }
+  | { type: "ERA_SCENE_ADVANCE"; era: PlayableEraId }
+  | { type: "ERA_COMPLETE"; era: PlayableEraId }
+  | { type: "ADD_ACHIEVEMENT"; achievementId: string }
   | { type: "ADD_EASTER_EGG"; id: string }
-  | { type: "REVEAL_COMPATIBILITY" }
-  | { type: "FINAL_SEQUENCE_COMPLETE" }
+  | { type: "SET_BLANK_SPACE"; text: string }
+  | { type: "ERA_XIII_TAP" }
+  | { type: "SET_FINAL_STAGE"; stage: FinalStage }
   | { type: "DEV_RESET" }
-  | { type: "DEV_SET_ERA_STATUS"; era: EraId; status: EraStatus }
+  | { type: "DEV_SET_ERA"; era: PlayableEraId }
   | { type: "DEV_UNLOCK_ALL" };
 
-function nextEraId(era: EraId): EraId | null {
-  const index = ERA_IDS.indexOf(era);
-  const next = ERA_IDS[index + 1];
-  return next ?? null;
+function nextPlayableEra(era: PlayableEraId): PlayableEraId | null {
+  const index = PLAYABLE_ERA_IDS.indexOf(era);
+  return PLAYABLE_ERA_IDS[index + 1] ?? null;
 }
 
 function addUnique<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list : [...list, value];
 }
 
-/** Whether the player is currently allowed to progress scenes within `era`. */
+/** O jogador só pode avançar cenas da Era em que está. */
 function isEraPlayable(status: EraStatus): boolean {
   return status === "available" || status === "active";
 }
@@ -69,68 +69,17 @@ export function transition(
       };
     }
 
-    /** Mission accepted, waiting on a real-world event outside the screen. */
-    case "ERA_ENTER_WAITING": {
-      const status = progress.eraStatuses[action.era];
-      if (!isEraPlayable(status)) return progress;
-      return {
-        ...progress,
-        eraStatuses: {
-          ...progress.eraStatuses,
-          [action.era]: "waiting_for_event",
-        },
-      };
-    }
-
-    case "EVENT_NOT_YET":
-    case "EVENT_MAYBE":
-    case "EVENT_DOUBT": {
-      const status = progress.eraStatuses[action.era];
-      if (status !== "waiting_for_event" && status !== "confirming_event") {
-        return progress;
-      }
-      return {
-        ...progress,
-        eraStatuses: {
-          ...progress.eraStatuses,
-          [action.era]: "waiting_for_event",
-        },
-      };
-    }
-
     /**
-     * Acontecimento confirmado: a Era volta a ficar "active" e a cena
-     * avança para a próxima (badge/encerramento) — ela só é marcada
-     * "completed" quando a própria tela de encerramento é concluída
-     * (ver ERA_COMPLETE), pois ainda há telas a mostrar depois do gate.
+     * Progressão contínua: concluir uma Era abre a próxima na hora, sem
+     * espera nem confirmação de acontecimento real. A Era VIII é a última
+     * jogável — o que vem depois dela é a sequência de interrupção, não
+     * uma Era IX (que nunca existe).
      */
-    case "EVENT_CONFIRMED": {
-      const status = progress.eraStatuses[action.era];
-      if (status !== "waiting_for_event" && status !== "confirming_event") {
-        return progress;
-      }
-      const narrativeEvent = eraCompletionEvent[action.era];
-      return {
-        ...progress,
-        eraStatuses: { ...progress.eraStatuses, [action.era]: "active" },
-        eraSceneIndex: {
-          ...progress.eraSceneIndex,
-          [action.era]: progress.eraSceneIndex[action.era] + 1,
-        },
-        completedEvents: narrativeEvent
-          ? addUnique(progress.completedEvents, narrativeEvent)
-          : progress.completedEvents,
-        badges: action.badgeId
-          ? addUnique(progress.badges, action.badgeId)
-          : progress.badges,
-      };
-    }
-
-    /** Fim de fato de uma Era (tela de encerramento concluída): libera a próxima. */
     case "ERA_COMPLETE": {
       const status = progress.eraStatuses[action.era];
       if (!isEraPlayable(status)) return progress;
-      const upcoming = nextEraId(action.era);
+
+      const upcoming = nextPlayableEra(action.era);
       const eraStatuses: Record<EraId, EraStatus> = {
         ...progress.eraStatuses,
         [action.era]: "completed",
@@ -138,6 +87,7 @@ export function transition(
       if (upcoming && eraStatuses[upcoming] === "locked") {
         eraStatuses[upcoming] = "available";
       }
+
       return {
         ...progress,
         eraStatuses,
@@ -145,8 +95,11 @@ export function transition(
       };
     }
 
-    case "ADD_BADGE":
-      return { ...progress, badges: addUnique(progress.badges, action.badgeId) };
+    case "ADD_ACHIEVEMENT":
+      return {
+        ...progress,
+        achievements: addUnique(progress.achievements, action.achievementId),
+      };
 
     case "ADD_EASTER_EGG":
       return {
@@ -154,33 +107,55 @@ export function transition(
         easterEggs: addUnique(progress.easterEggs, action.id),
       };
 
-    case "REVEAL_COMPATIBILITY":
-      return { ...progress, compatibilityRevealed: true };
+    case "SET_BLANK_SPACE":
+      return { ...progress, blankSpaceAnswer: action.text };
 
-    case "FINAL_SEQUENCE_COMPLETE":
-      return { ...progress, finalSequenceCompleted: true };
+    case "ERA_XIII_TAP":
+      return { ...progress, eraXiiiTapCount: progress.eraXiiiTapCount + 1 };
+
+    case "SET_FINAL_STAGE":
+      return { ...progress, finalStage: action.stage };
 
     case "DEV_RESET":
       return createInitialProgress();
 
-    case "DEV_SET_ERA_STATUS":
+    case "DEV_SET_ERA": {
+      const eraStatuses = { ...progress.eraStatuses };
+      PLAYABLE_ERA_IDS.forEach((id) => {
+        if (id < action.era) eraStatuses[id] = "completed";
+        else if (id === action.era) eraStatuses[id] = "active";
+        else eraStatuses[id] = "locked";
+      });
       return {
         ...progress,
-        eraStatuses: {
-          ...progress.eraStatuses,
-          [action.era]: action.status,
-        },
+        introCompleted: true,
+        termsAccepted: true,
+        currentEra: action.era,
+        eraStatuses,
+        eraSceneIndex: { ...progress.eraSceneIndex, [action.era]: 0 },
+        finalStage: "playing",
       };
+    }
 
     case "DEV_UNLOCK_ALL": {
       const eraStatuses = { ...progress.eraStatuses };
-      ERA_IDS.forEach((id) => {
+      PLAYABLE_ERA_IDS.forEach((id) => {
         if (eraStatuses[id] === "locked") eraStatuses[id] = "available";
       });
-      return { ...progress, eraStatuses, introCompleted: true, termsAccepted: true };
+      return {
+        ...progress,
+        eraStatuses,
+        introCompleted: true,
+        termsAccepted: true,
+      };
     }
 
     default:
       return progress;
   }
+}
+
+/** A Era VIII é a última jogável: depois dela vem a interrupção. */
+export function isLastPlayableEra(era: PlayableEraId): boolean {
+  return era === LAST_PLAYABLE_ERA;
 }

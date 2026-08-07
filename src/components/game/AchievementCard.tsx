@@ -5,15 +5,24 @@ import { motion } from "framer-motion";
 import { useEraTheme } from "@/components/game/EraThemeProvider";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { playEffect } from "@/lib/audio";
-import type { Badge } from "@/types/game";
+import type { Achievement } from "@/types/game";
 
-export function BadgeCard({ badge }: { badge: Badge }) {
+/** 🏆 é um dos dois únicos emojis permitidos na interface. */
+export function AchievementCard({
+  achievement,
+  onUnlock,
+}: {
+  achievement: Achievement;
+  onUnlock?: (id: string) => void;
+}) {
   const theme = useEraTheme();
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     playEffect("badge");
-  }, [badge.id]);
+    onUnlock?.(achievement.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [achievement.id]);
 
   return (
     <motion.div
@@ -23,13 +32,15 @@ export function BadgeCard({ badge }: { badge: Badge }) {
       className="flex flex-col items-center gap-2 text-center"
     >
       <span
-        className="inline-flex min-h-11 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold tracking-wide"
         style={{ backgroundColor: theme.accent, color: theme.accentTextColor }}
       >
-        🏆 {badge.title}
+        🏆 {achievement.title}
       </span>
-      {badge.description ? (
-        <p className="max-w-xs text-sm opacity-90">{badge.description}</p>
+      {achievement.description ? (
+        <p className="max-w-xs text-sm leading-relaxed opacity-90">
+          {achievement.description}
+        </p>
       ) : null}
     </motion.div>
   );

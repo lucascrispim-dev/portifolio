@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { AchievementCard } from "@/components/game/AchievementCard";
 import { ChoiceButton } from "@/components/game/ChoiceButton";
 import { NarratorText } from "@/components/game/NarratorText";
-import { BadgeCard } from "@/components/game/BadgeCard";
-import type { EraScreen } from "@/types/game";
+import type { EraScreen, NarratorLine } from "@/types/game";
 
 type QuizScreen = Extract<EraScreen, { kind: "quiz" }>;
 
@@ -13,24 +13,30 @@ export function QuizCard({
   onResolved,
 }: {
   screen: QuizScreen;
-  onResolved: (badgeId?: string) => void;
+  onResolved: (achievementId?: string) => void;
 }) {
   const [promptDone, setPromptDone] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showWrong, setShowWrong] = useState(false);
-  const [showCorrect, setShowCorrect] = useState(false);
+  const [resolved, setResolved] = useState(false);
+  const [responseLines, setResponseLines] = useState<NarratorLine[]>([]);
 
   function handleSelect(optionId: string) {
-    setSelectedId(optionId);
     const option = screen.options.find((o) => o.id === optionId);
     const isCorrect = screen.anyAnswerAccepted || option?.correct;
 
-    if (isCorrect) {
-      setShowCorrect(true);
-      setShowWrong(false);
-    } else {
+    setSelectedId(optionId);
+
+    if (!isCorrect) {
       setShowWrong(true);
+      return;
     }
+
+    setShowWrong(false);
+    // Uma alternativa pode ter resposta própria (ex.: "Enchanted"), que
+    // substitui a fala padrão do acerto.
+    setResponseLines(option?.response ?? screen.onCorrect);
+    setResolved(true);
   }
 
   function tryAgain() {
@@ -39,10 +45,10 @@ export function QuizCard({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-1 flex-col justify-center gap-6">
       <NarratorText lines={screen.prompt} onDone={() => setPromptDone(true)} />
 
-      {promptDone && !showCorrect ? (
+      {promptDone && !resolved ? (
         <div className="flex flex-col gap-3">
           {screen.options.map((option) => (
             <ChoiceButton
@@ -65,12 +71,14 @@ export function QuizCard({
         </div>
       ) : null}
 
-      {showCorrect ? (
-        <div className="flex flex-col gap-4">
-          <NarratorText lines={screen.onCorrect} />
-          {screen.badge ? <BadgeCard badge={screen.badge} /> : null}
-          <ChoiceButton onClick={() => onResolved(screen.badge?.id)}>
-            Continuar
+      {resolved ? (
+        <div className="flex flex-col gap-5">
+          <NarratorText lines={responseLines} />
+          {screen.achievement ? (
+            <AchievementCard achievement={screen.achievement} />
+          ) : null}
+          <ChoiceButton onClick={() => onResolved(screen.achievement?.id)}>
+            {screen.cta ?? "CONTINUAR"}
           </ChoiceButton>
         </div>
       ) : null}

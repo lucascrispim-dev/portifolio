@@ -2,128 +2,146 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { SystemMessage } from "@/components/game/SystemMessage";
-import { ProgressBar } from "@/components/game/ProgressBar";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { projectConfig } from "@/config/project";
+import { COMPATIBILITY_STEPS } from "@/components/game/CompatibilityBar";
 
 type Step =
-  | "encerrando"
-  | "transferindo"
-  | "destino"
-  | "concluida"
-  | "silencio"
-  | "despedida"
+  | "shuttingDown"
+  | "transferring"
+  | "permission"
+  | "farewell"
   | "final";
 
 const STEP_ORDER: Step[] = [
-  "encerrando",
-  "transferindo",
-  "destino",
-  "concluida",
-  "silencio",
-  "despedida",
+  "shuttingDown",
+  "transferring",
+  "permission",
+  "farewell",
   "final",
 ];
 
 /**
- * Sequência terminal e irreversível da Era VIII. Depois de "Olha para
- * ele." não existe nenhum botão, opção ou "Continuar" — o jogo termina
- * ali. Nunca adicione interação após este ponto.
+ * Sequência terminal e irreversível. Depois de "Olha para ele." não
+ * existe botão, contagem ou pergunta — o jogo termina ali e o resto
+ * acontece fora da tela. Nunca adicione interação a partir deste ponto.
  */
 export function FinalTransferSequence({
-  playerOneName,
   onReachFinal,
 }: {
-  playerOneName: string;
   onReachFinal?: () => void;
 }) {
   const reducedMotion = useReducedMotion();
   const [stepIndex, setStepIndex] = useState(0);
   const step = STEP_ORDER[stepIndex];
 
-  function advance() {
-    setStepIndex((i) => Math.min(i + 1, STEP_ORDER.length - 1));
-  }
-
   useEffect(() => {
-    /**
-     * Os dois últimos compassos avançam sozinhos: o roteiro marca apenas
-     * "Silêncio." e "Fade." entre a despedida e a tela final — não existe
-     * botão ali. A partir daqui o jogador só assiste.
-     */
-    const autoAdvanceMs: Partial<Record<Step, number>> = {
-      silencio: 1400,
-      despedida: 4200,
-    };
-
-    const delay = autoAdvanceMs[step];
-    if (delay !== undefined) {
-      const timeout = window.setTimeout(advance, reducedMotion ? 100 : delay);
-      return () => window.clearTimeout(timeout);
-    }
-
     if (step === "final") {
       onReachFinal?.();
+      return;
     }
+    const durations: Record<Step, number> = {
+      shuttingDown: 7000,
+      transferring: 5200,
+      permission: 4200,
+      farewell: 7000,
+      final: 0,
+    };
+    const delay = reducedMotion ? 200 : durations[step];
+    const timeout = window.setTimeout(() => setStepIndex((i) => i + 1), delay);
+    return () => window.clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, reducedMotion]);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 bg-black px-8 text-center text-neutral-200">
-      {step === "encerrando" ? (
-        <SystemMessage text="Encerrando narrativa..." onDone={advance} />
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-black px-8 text-center font-mono text-sm text-neutral-300">
+      {step === "shuttingDown" ? (
+        <Fade>
+          <p className="text-neutral-500">Encerrando narrativa...</p>
+          <p className="text-neutral-500">Desativando previsões...</p>
+          <p className="text-neutral-500">Removendo distrações...</p>
+          <p className="text-neutral-500">
+            Silenciando Taylor Swift por aproximadamente trinta segundos...
+          </p>
+          <p className="pt-2 text-neutral-100">Isso deve ser importante.</p>
+        </Fade>
       ) : null}
 
-      {step === "transferindo" ? (
-        <div className="flex flex-col items-center gap-3">
-          <SystemMessage text="Transferindo controle..." />
-          <ProgressBar durationMs={1100} onDone={advance} />
-        </div>
+      {step === "transferring" ? (
+        <Fade>
+          <p className="text-xs tracking-[0.3em] text-neutral-500">
+            TRANSFERINDO CONTROLE
+          </p>
+          <p className="text-neutral-500">Destino:</p>
+          <p className="font-serif text-4xl text-neutral-50">
+            {projectConfig.playerOneName}
+          </p>
+          <TransferBar />
+        </Fade>
       ) : null}
 
-      {step === "destino" ? (
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-sm uppercase tracking-[0.3em] text-neutral-500">Destino:</p>
-          <motion.p
-            initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            onAnimationComplete={advance}
-            className="font-serif text-4xl text-neutral-50"
-          >
-            {playerOneName}
-          </motion.p>
-        </div>
+      {step === "permission" ? (
+        <Fade>
+          <p className="text-neutral-100">Permissão humana necessária.</p>
+          <p className="pt-2 text-neutral-400">Controle transferido.</p>
+        </Fade>
       ) : null}
 
-      {step === "concluida" ? (
-        <SystemMessage text="Transferência concluída." onDone={advance} />
-      ) : null}
-
-      {step === "silencio" ? <div aria-hidden className="h-2" /> : null}
-
-      {step === "despedida" ? (
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-col items-center gap-3 text-neutral-300"
-        >
-          <p>Boa sorte, {playerOneName}.</p>
-          <p className="max-w-xs">Escreva um capítulo que eu nunca conseguiria.</p>
-        </motion.div>
+      {step === "farewell" ? (
+        <Fade>
+          <p className="text-neutral-100">
+            Boa sorte, {projectConfig.playerOneName}.
+          </p>
+          <p className="pt-2 text-neutral-100">{projectConfig.playerTwoName}...</p>
+          <p className="max-w-xs pt-2 leading-relaxed">
+            O próximo capítulo não está dentro deste site.
+          </p>
+        </Fade>
       ) : null}
 
       {step === "final" ? (
         <motion.p
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.6 }}
+          transition={{ duration: 1.8 }}
           className="font-serif text-3xl text-neutral-50"
         >
           Olha para ele.
         </motion.p>
       ) : null}
     </div>
+  );
+}
+
+function Fade({ children }: { children: React.ReactNode }) {
+  const reducedMotion = useReducedMotion();
+  return (
+    <motion.div
+      initial={reducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.7 }}
+      className="flex flex-col items-center gap-2 leading-relaxed"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** Sobe em múltiplos de 13 e para em 99%, como todas as barras do jogo. */
+function TransferBar() {
+  const reducedMotion = useReducedMotion();
+  const last = COMPATIBILITY_STEPS.length - 1;
+  const [index, setIndex] = useState(reducedMotion ? last : 0);
+
+  useEffect(() => {
+    if (index >= last) return;
+    const timeout = window.setTimeout(() => setIndex((i) => i + 1), 300);
+    return () => window.clearTimeout(timeout);
+  }, [index, last]);
+
+  return (
+    <p className="pt-1 tabular-nums text-neutral-400">
+      {COMPATIBILITY_STEPS[index]}%
+    </p>
   );
 }
